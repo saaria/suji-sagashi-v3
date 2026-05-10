@@ -162,6 +162,16 @@ export const useGameSequence = ({
       return;
     }
 
+    const isCpuGetBoostTurn = shouldActivateCpuGetBoost(
+      roundCountRef.current,
+      playerScoreRef.current,
+      cpuScoreRef.current
+    );
+    if (isCpuGetBoostTurn) {
+      hasCpuGetBoostBeenUsedRef.current = true;
+    }
+    setIsCpuGetBoostActive(isCpuGetBoostTurn);
+
     // 「探す数字は...」を表示
     onMessage("探す数字は...");
     
@@ -176,16 +186,6 @@ export const useGameSequence = ({
       if (currentTarget !== undefined) {
         setTargetNumber(currentTarget);
         onMessage(`${currentTarget}だ！`);
-
-        const isCpuGetBoostTurn = shouldActivateCpuGetBoost(
-          roundCountRef.current,
-          playerScoreRef.current,
-          cpuScoreRef.current
-        );
-        if (isCpuGetBoostTurn) {
-          hasCpuGetBoostBeenUsedRef.current = true;
-        }
-        setIsCpuGetBoostActive(isCpuGetBoostTurn);
 
         // CPUget補正中はプレイヤー入力を受け付けず、CPU待機時間を0にする
         setCanPlayerClick(!isCpuGetBoostTurn);

@@ -10,7 +10,15 @@ export const DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
 };
 
 // ステータスバッジタイプを追加
-export type StatusBadge = 'CPUget' | 'Shorten' | 'Question' | 'Unknown' | 'Shuffle';
+export type StatusBadge =
+  | 'CPUget'
+  | 'Shorten'
+  | 'Quicken'
+  | 'Shuffle'
+  | 'Num*2'
+  | 'Hiding'
+  | 'Secret'
+  | 'Extend';
 
 // すべてのバッジタイプを統合
 export type BadgeType = Difficulty | StatusBadge; 

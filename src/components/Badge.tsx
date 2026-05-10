@@ -14,13 +14,13 @@ export const Badge: React.FC<BadgeProps> = ({
   const badgeStyle = {
     backgroundColor: isActive ? '#669933' : '#006633',
     color: isActive ? '#ccff33' : '#00cc33',
-    padding: '0.25rem 0.75rem',
+    padding: '0.25rem 0.25rem',
     borderRadius: '0.375rem',
     fontWeight: 'bold',
     display: 'inline-block',
     minWidth: '80px',
     textAlign: 'center' as const,
-    margin: '0 0.25rem'
+    margin: '0.25rem'
   };
 
   return (

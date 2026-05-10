@@ -17,7 +17,7 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
   const difficulties: Difficulty[] = ['Easy', 'Normal', 'Hard', 'Hell'];
   
   // すべてのステータスバッジ
-  const statusBadges: StatusBadge[] = ['CPUget', 'Shorten', 'Question', 'Unknown', 'Shuffle'];
+  const statusBadges: StatusBadge[] = ['CPUget', 'Shorten', 'Quicken', 'Shuffle', 'Num*2', 'Hiding', 'Secret', 'Extend'];
 
   return (
     <div style={{ marginBottom: '1rem' }}>

@@ -33,6 +33,7 @@ function App() {
     isCpuGetBoostActive,
     isShortenActive,
     isSecretActive,
+    isHidingActive,
     panelNumbers, 
     playerScore,
     cpuScore,
@@ -49,7 +50,8 @@ function App() {
   const activeStatuses: StatusBadge[] = [
     ...(isCpuGetBoostActive ? ['CPUget'] as const : []),
     ...(isShortenActive ? ['Shorten'] as const : []),
-    ...(isSecretActive ? ['Secret'] as const : [])
+    ...(isSecretActive ? ['Secret'] as const : []),
+    ...(isHidingActive ? ['Hiding'] as const : [])
   ];
 
   // ゲームスタート時にアクティブな難易度をセット
@@ -135,6 +137,7 @@ function App() {
           numbers={panelNumbers} 
           disabledNumbers={disabledPanels}
           isAllDisabled={!isGameRunning}
+          isTextHidden={isHidingActive}
           onPanelClick={handlePanelClick}
         />
         

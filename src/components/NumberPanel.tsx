@@ -2,6 +2,7 @@ interface NumberPanelProps {
   numbers: number[];
   disabledNumbers: number[];
   isAllDisabled?: boolean;
+  isTextHidden?: boolean;
   onPanelClick?: (number: number) => void;
 }
 
@@ -9,6 +10,7 @@ export const NumberPanel: React.FC<NumberPanelProps> = ({
   numbers,
   disabledNumbers,
   isAllDisabled = false,
+  isTextHidden = false,
   onPanelClick 
 }) => {
   // スタイルを直接指定
@@ -53,8 +55,9 @@ export const NumberPanel: React.FC<NumberPanelProps> = ({
             onClick={() => !isDisabled && onPanelClick?.(number)}
             disabled={isDisabled}
             style={buttonStyle}
+            aria-label={`panel-${number}`}
           >
-            {number}
+            {isTextHidden ? '' : number}
           </button>
         );
       })}

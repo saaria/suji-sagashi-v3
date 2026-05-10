@@ -15,24 +15,42 @@ function App() {
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
+  const eventSeRef = useRef<HTMLAudioElement | null>(null);
+  const prevStatusRef = useRef({
+    cpuGet: false,
+    shorten: false,
+    quicken: false,
+    shuffle: false,
+    numDouble: false,
+    hiding: false,
+    secret: false,
+    extend: false
+  });
 
   useEffect(() => {
     const bgm = new Audio('/mdt01.mp3');
     const cpuGetSe = new Audio('/push03.wav');
+    const eventSe = new Audio('/push01.wav');
     bgm.loop = false;
     bgm.preload = 'auto';
     cpuGetSe.loop = false;
     cpuGetSe.preload = 'auto';
+    eventSe.loop = false;
+    eventSe.preload = 'auto';
     bgmRef.current = bgm;
     cpuGetSeRef.current = cpuGetSe;
+    eventSeRef.current = eventSe;
 
     return () => {
       bgm.pause();
       bgm.currentTime = 0;
       cpuGetSe.pause();
       cpuGetSe.currentTime = 0;
+      eventSe.pause();
+      eventSe.currentTime = 0;
       bgmRef.current = null;
       cpuGetSeRef.current = null;
+      eventSeRef.current = null;
     };
   }, []);
 
@@ -89,6 +107,50 @@ function App() {
     ...(isHidingActive ? ['Hiding'] as const : []),
     ...(isExtendActive ? ['Extend'] as const : [])
   ];
+
+  useEffect(() => {
+    const prev = prevStatusRef.current;
+    const activated =
+      (!prev.cpuGet && isCpuGetBoostActive) ||
+      (!prev.shorten && isShortenActive) ||
+      (!prev.quicken && isQuickenActive) ||
+      (!prev.shuffle && isShuffleActive) ||
+      (!prev.numDouble && isNumDoubleActive) ||
+      (!prev.hiding && isHidingActive) ||
+      (!prev.secret && isSecretActive) ||
+      (!prev.extend && isExtendActive);
+
+    if (activated) {
+      const eventSe = eventSeRef.current;
+      if (eventSe) {
+        eventSe.pause();
+        eventSe.currentTime = 0;
+        void eventSe.play().catch((error) => {
+          console.error('イベント効果音の再生に失敗しました:', error);
+        });
+      }
+    }
+
+    prevStatusRef.current = {
+      cpuGet: isCpuGetBoostActive,
+      shorten: isShortenActive,
+      quicken: isQuickenActive,
+      shuffle: isShuffleActive,
+      numDouble: isNumDoubleActive,
+      hiding: isHidingActive,
+      secret: isSecretActive,
+      extend: isExtendActive
+    };
+  }, [
+    isCpuGetBoostActive,
+    isShortenActive,
+    isQuickenActive,
+    isShuffleActive,
+    isNumDoubleActive,
+    isHidingActive,
+    isSecretActive,
+    isExtendActive
+  ]);
 
   // ゲームスタート時にアクティブな難易度をセット
   const startGame = useCallback(() => {

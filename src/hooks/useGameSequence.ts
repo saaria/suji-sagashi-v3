@@ -9,7 +9,8 @@ interface UseGameSequenceProps {
   maxRounds?: number;
 }
 
-const CPU_GAME_OVER_SCORE = 21;
+const CLEAR_POINT = 20;
+const CPU_GAME_OVER_SCORE = CLEAR_POINT + 1;
 const QUICKEN_TRIGGER_TURN = 20;
 const SHORTEN_TRIGGER_TURN = 25;
 const SHUFFLE_TRIGGER_TURN = 30;
@@ -418,8 +419,8 @@ export const useGameSequence = ({
     
     setIsGameRunning(true);
     
-    // ゲームスタートメッセージを表示
-    onMessage("ゲームスタート");
+    // ゲーム開始時にクリアポイントを表示
+    onMessage(`クリアポイント：${CLEAR_POINT}`);
 
     // 3秒後に最初のシーケンスを開始
     const initialTimer = setTimeout(() => {

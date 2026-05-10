@@ -9,8 +9,12 @@ interface UseGameSequenceProps {
   maxRounds?: number;
 }
 
-const CLEAR_POINT = 20;
-const CPU_GAME_OVER_SCORE = CLEAR_POINT + 1;
+const CLEAR_POINT: Record<Difficulty, number> = {
+  Easy: 20,
+  Normal: 23,
+  Hard: 27,
+  Hell: 32
+};
 const QUICKEN_TRIGGER_TURN = 20;
 const SHORTEN_TRIGGER_TURN = 25;
 const SHUFFLE_TRIGGER_TURN = 30;
@@ -101,8 +105,9 @@ export const useGameSequence = ({
   }, []);
 
   const shouldEndByCpuLead = useCallback((cpuCurrentScore: number) => {
-    return cpuCurrentScore >= CPU_GAME_OVER_SCORE;
-  }, []);
+    const cpuGameOverScore = maxRounds - CLEAR_POINT[difficulty] + 1;
+    return cpuCurrentScore >= cpuGameOverScore;
+  }, [difficulty, maxRounds]);
 
   const shouldActivateCpuGetBoost = useCallback((roundCount: number, playerCurrentScore: number, cpuCurrentScore: number) => {
     const currentTurn = roundCount + 1;
@@ -419,8 +424,8 @@ export const useGameSequence = ({
     
     setIsGameRunning(true);
     
-    // ゲーム開始時にクリアポイントを表示
-    onMessage(`クリアポイント：${CLEAR_POINT}`);
+    // ゲーム開始時に難易度ごとのクリアポイントを表示
+    onMessage(`クリアポイント：${CLEAR_POINT[difficulty]}`);
 
     // 3秒後に最初のシーケンスを開始
     const initialTimer = setTimeout(() => {
@@ -428,7 +433,7 @@ export const useGameSequence = ({
     }, 3000);
 
     timersRef.current.push(initialTimer);
-  }, [clearTimers, startNextSequence, onMessage]);
+  }, [clearTimers, startNextSequence, onMessage, difficulty]);
 
   // コンポーネントのアンマウント時にタイマーをクリーンアップ
   useEffect(() => {

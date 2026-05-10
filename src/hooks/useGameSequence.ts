@@ -12,6 +12,7 @@ interface UseGameSequenceProps {
 const CPU_GAME_OVER_SCORE = 21;
 const SHORTEN_TRIGGER_TURN = 25;
 const SHUFFLE_TRIGGER_TURN = 30;
+const NUM_DOUBLE_TRIGGER_TURN = 33;
 const SECRET_TRIGGER_TURN = 35;
 const HIDING_TRIGGER_TURN = 37;
 const SHORTEN_DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
@@ -31,6 +32,7 @@ export const useGameSequence = ({
   const [isGameOver, setIsGameOver] = useState(false);
   const [isCpuGetBoostActive, setIsCpuGetBoostActive] = useState(false);
   const [isShortenActive, setIsShortenActive] = useState(false);
+  const [isNumDoubleActive, setIsNumDoubleActive] = useState(false);
   const [isSecretActive, setIsSecretActive] = useState(false);
   const [isHidingActive, setIsHidingActive] = useState(false);
   const [numberSequence, setNumberSequence] = useState<number[]>([]);
@@ -124,6 +126,11 @@ export const useGameSequence = ({
     return currentTurn > SHUFFLE_TRIGGER_TURN && difficulty !== 'Easy';
   }, [difficulty]);
 
+  const shouldActivateNumDouble = useCallback((roundCount: number) => {
+    const currentTurn = roundCount + 1;
+    return currentTurn >= NUM_DOUBLE_TRIGGER_TURN && difficulty !== 'Easy';
+  }, [difficulty]);
+
   const shouldActivateSecret = useCallback((roundCount: number, playerCurrentScore: number, cpuCurrentScore: number) => {
     const currentTurn = roundCount + 1;
     return (
@@ -151,6 +158,7 @@ export const useGameSequence = ({
     setIsGameOver(true);
     setIsCpuGetBoostActive(false);
     setIsShortenActive(false);
+    setIsNumDoubleActive(false);
     setIsSecretActive(false);
     setIsHidingActive(false);
     isShortenActiveRef.current = false;
@@ -218,6 +226,7 @@ export const useGameSequence = ({
       setIsGameRunning(false);
       setIsCpuGetBoostActive(false);
       setIsShortenActive(false);
+      setIsNumDoubleActive(false);
       setIsSecretActive(false);
       setIsHidingActive(false);
       isShortenActiveRef.current = false;
@@ -251,6 +260,9 @@ export const useGameSequence = ({
       isShortenActiveRef.current = true;
       setIsShortenActive(true);
     }
+
+    const isNumDoubleTurn = shouldActivateNumDouble(roundCountRef.current);
+    setIsNumDoubleActive(isNumDoubleTurn);
 
     const isSecretTurn = shouldActivateSecret(
       roundCountRef.current,
@@ -288,7 +300,8 @@ export const useGameSequence = ({
         if (isSecretTurn) {
           onMessage("⁇だ！");
         } else {
-          onMessage(`${currentTarget}だ！`);
+          const displayTarget = isNumDoubleTurn ? currentTarget * 2 : currentTarget;
+          onMessage(`${displayTarget}だ！`);
         }
         if (shouldShufflePanelsThisTurn(roundCountRef.current)) {
           setPanelNumbers(generateShuffledArray(1, 40));
@@ -349,7 +362,7 @@ export const useGameSequence = ({
     }, 3000); // number_instructions_timer
 
     timersRef.current.push(timer1);
-  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten, shouldShufflePanelsThisTurn, shouldActivateSecret, shouldActivateHiding]);
+  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten, shouldShufflePanelsThisTurn, shouldActivateNumDouble, shouldActivateSecret, shouldActivateHiding]);
 
   const startGame = useCallback(() => {
     clearTimers();
@@ -362,6 +375,7 @@ export const useGameSequence = ({
     setIsGameOver(false);
     setIsCpuGetBoostActive(false);
     setIsShortenActive(false);
+    setIsNumDoubleActive(false);
     setIsSecretActive(false);
     setIsHidingActive(false);
     setTargetNumber(null);
@@ -406,6 +420,7 @@ export const useGameSequence = ({
     isGameOver,
     isCpuGetBoostActive,
     isShortenActive,
+    isNumDoubleActive,
     isSecretActive,
     isHidingActive,
     numberSequence,

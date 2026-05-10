@@ -11,6 +11,7 @@ interface UseGameSequenceProps {
 
 const CPU_GAME_OVER_SCORE = 21;
 const SHORTEN_TRIGGER_TURN = 25;
+const SHUFFLE_TRIGGER_TURN = 30;
 const SHORTEN_DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
   Easy: 3.5,
   Normal: 2.5,
@@ -111,6 +112,11 @@ export const useGameSequence = ({
       cpuCurrentScore < playerCurrentScore
     );
   }, []);
+
+  const shouldShufflePanelsThisTurn = useCallback((roundCount: number) => {
+    const currentTurn = roundCount + 1;
+    return currentTurn > SHUFFLE_TRIGGER_TURN && difficulty !== 'Easy';
+  }, [difficulty]);
 
   const endGameByCpuLead = useCallback(() => {
     clearTimers();
@@ -225,6 +231,9 @@ export const useGameSequence = ({
       if (currentTarget !== undefined) {
         setTargetNumber(currentTarget);
         onMessage(`${currentTarget}だ！`);
+        if (shouldShufflePanelsThisTurn(roundCountRef.current)) {
+          setPanelNumbers(generateShuffledArray(1, 40));
+        }
 
         // CPUget補正中はプレイヤー入力を受け付けず、CPU待機時間を0にする
         setCanPlayerClick(!isCpuGetBoostTurn);
@@ -278,7 +287,7 @@ export const useGameSequence = ({
     }, 3000); // number_instructions_timer
 
     timersRef.current.push(timer1);
-  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten]);
+  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten, shouldShufflePanelsThisTurn]);
 
   const startGame = useCallback(() => {
     clearTimers();

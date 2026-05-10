@@ -10,6 +10,7 @@ interface UseGameSequenceProps {
 }
 
 const CPU_GAME_OVER_SCORE = 21;
+const QUICKEN_TRIGGER_TURN = 20;
 const SHORTEN_TRIGGER_TURN = 25;
 const SHUFFLE_TRIGGER_TURN = 30;
 const NUM_DOUBLE_TRIGGER_TURN = 33;
@@ -31,6 +32,7 @@ export const useGameSequence = ({
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isCpuGetBoostActive, setIsCpuGetBoostActive] = useState(false);
+  const [isQuickenActive, setIsQuickenActive] = useState(false);
   const [isShortenActive, setIsShortenActive] = useState(false);
   const [isShuffleActive, setIsShuffleActive] = useState(false);
   const [isNumDoubleActive, setIsNumDoubleActive] = useState(false);
@@ -111,6 +113,11 @@ export const useGameSequence = ({
     );
   }, [difficulty]);
 
+  const shouldActivateQuicken = useCallback((roundCount: number) => {
+    const currentTurn = roundCount + 1;
+    return currentTurn >= QUICKEN_TRIGGER_TURN && difficulty !== 'Easy';
+  }, [difficulty]);
+
   const shouldActivateShorten = useCallback((roundCount: number, playerCurrentScore: number, cpuCurrentScore: number, isCpuGetBoostTurn: boolean) => {
     const currentTurn = roundCount + 1;
     return (
@@ -142,6 +149,14 @@ export const useGameSequence = ({
     );
   }, [difficulty]);
 
+  const getNumberInstructionsTime = useCallback((isQuickenEnabled: boolean) => {
+    return isQuickenEnabled ? 2000 : 3000;
+  }, []);
+
+  const getReadyInstructionsTime = useCallback((isQuickenEnabled: boolean) => {
+    return isQuickenEnabled ? 1000 : 2000;
+  }, []);
+
   const shouldActivateHiding = useCallback((roundCount: number, playerCurrentScore: number, cpuCurrentScore: number) => {
     const currentTurn = roundCount + 1;
     return (
@@ -158,6 +173,7 @@ export const useGameSequence = ({
     setIsGameRunning(false);
     setIsGameOver(true);
     setIsCpuGetBoostActive(false);
+    setIsQuickenActive(false);
     setIsShortenActive(false);
     setIsShuffleActive(false);
     setIsNumDoubleActive(false);
@@ -206,6 +222,9 @@ export const useGameSequence = ({
         // プレイヤークリックを無効化
         setCanPlayerClick(false);
         
+        const isQuickenTurn = shouldActivateQuicken(roundCountRef.current);
+        const readyInstructionsTime = getReadyInstructionsTime(isQuickenTurn);
+
         // 次のラウンドへ進むタイマーを設定
         const nextRoundTimer = setTimeout(() => {
           const nextRoundCount = roundCountRef.current + 1;
@@ -215,18 +234,19 @@ export const useGameSequence = ({
             return;
           }
           startNextSequence();
-        }, 2000); // ready_instructions_timer
+        }, readyInstructionsTime); // ready_instructions_timer
         
         timersRef.current.push(nextRoundTimer);
       }
     }
     // 一致しない場合は何もしない
-  }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels, shouldEndByCpuLead, endGameByCpuLead]);
+  }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels, shouldEndByCpuLead, endGameByCpuLead, shouldActivateQuicken, getReadyInstructionsTime]);
 
   const startNextSequence = useCallback(() => {
     if (roundCountRef.current >= maxRounds) {
       setIsGameRunning(false);
       setIsCpuGetBoostActive(false);
+      setIsQuickenActive(false);
       setIsShortenActive(false);
       setIsShuffleActive(false);
       setIsNumDoubleActive(false);
@@ -242,6 +262,9 @@ export const useGameSequence = ({
     setIsCpuGetBoostActive(false);
     setIsSecretActive(false);
     setIsHidingActive(false);
+
+    const isQuickenTurn = shouldActivateQuicken(roundCountRef.current);
+    setIsQuickenActive(isQuickenTurn);
 
     const isCpuGetBoostTurn = shouldActivateCpuGetBoost(
       roundCountRef.current,
@@ -296,6 +319,8 @@ export const useGameSequence = ({
     // プレイヤークリックを無効化
     setCanPlayerClick(false);
 
+    const numberInstructionsTime = getNumberInstructionsTime(isQuickenTurn);
+
     // number_instructions_timer (3秒)
     const timer1 = setTimeout(() => {
       // 現在のラウンドに対応する「探す数値の順番配列」の値を取得
@@ -341,6 +366,7 @@ export const useGameSequence = ({
           setCanPlayerClick(false);
 
           // ready_instructions_timer (2秒)
+          const readyInstructionsTime = getReadyInstructionsTime(isQuickenTurn);
           const timer3 = setTimeout(() => {
             if (isCpuGetBoostTurn) {
               setIsCpuGetBoostActive(false);
@@ -355,7 +381,7 @@ export const useGameSequence = ({
               return;
             }
             startNextSequence();
-          }, 2000);
+          }, readyInstructionsTime);
 
           timersRef.current.push(timer3);
         }, cpuWaitTime); // 難易度に基づく時間
@@ -365,10 +391,10 @@ export const useGameSequence = ({
         console.error("ターゲット数字が取得できませんでした");
         onMessage("数字が表示できません");
       }
-    }, 3000); // number_instructions_timer
+    }, numberInstructionsTime); // number_instructions_timer
 
     timersRef.current.push(timer1);
-  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten, shouldShufflePanelsThisTurn, shouldActivateNumDouble, shouldActivateSecret, shouldActivateHiding]);
+  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateQuicken, shouldActivateShorten, shouldShufflePanelsThisTurn, shouldActivateNumDouble, shouldActivateSecret, shouldActivateHiding, getNumberInstructionsTime, getReadyInstructionsTime]);
 
   const startGame = useCallback(() => {
     clearTimers();
@@ -380,6 +406,7 @@ export const useGameSequence = ({
     isShortenActiveRef.current = false;
     setIsGameOver(false);
     setIsCpuGetBoostActive(false);
+    setIsQuickenActive(false);
     setIsShortenActive(false);
     setIsShuffleActive(false);
     setIsNumDoubleActive(false);
@@ -426,6 +453,7 @@ export const useGameSequence = ({
     isGameRunning,
     isGameOver,
     isCpuGetBoostActive,
+    isQuickenActive,
     isShortenActive,
     isShuffleActive,
     isNumDoubleActive,

@@ -66,6 +66,8 @@ export const useGameSequence = ({
   const numberSequenceRef = useRef<number[]>([]);
   // CPU処理のタイマー参照を保持
   const cpuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const correctSeRef = useRef<HTMLAudioElement | null>(null);
+  const wrongSeRef = useRef<HTMLAudioElement | null>(null);
   
   // スコアの参照を保持
   const playerScoreRef = useRef(0);
@@ -79,6 +81,26 @@ export const useGameSequence = ({
   useEffect(() => {
     cpuScoreRef.current = cpuScore;
   }, [cpuScore]);
+
+  useEffect(() => {
+    const correctSe = new Audio('/d_chaim.wav');
+    const wrongSe = new Audio('/kan.wav');
+    correctSe.loop = false;
+    wrongSe.loop = false;
+    correctSe.preload = 'auto';
+    wrongSe.preload = 'auto';
+    correctSeRef.current = correctSe;
+    wrongSeRef.current = wrongSe;
+
+    return () => {
+      correctSe.pause();
+      correctSe.currentTime = 0;
+      wrongSe.pause();
+      wrongSe.currentTime = 0;
+      correctSeRef.current = null;
+      wrongSeRef.current = null;
+    };
+  }, []);
 
   // ゲーム終了時の結果表示関数
   const showGameResult = useCallback(() => {
@@ -106,6 +128,15 @@ export const useGameSequence = ({
       clearTimeout(cpuTimerRef.current);
       cpuTimerRef.current = null;
     }
+  }, []);
+
+  const playSe = useCallback((audio: HTMLAudioElement | null) => {
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    void audio.play().catch((error) => {
+      console.error('効果音の再生に失敗しました:', error);
+    });
   }, []);
 
   const shouldEndByCpuLead = useCallback((cpuCurrentScore: number) => {
@@ -210,6 +241,7 @@ export const useGameSequence = ({
     
     // クリックされた数字がターゲットと一致するか確認
     if (clickedNumber === targetNumber) {
+      playSe(correctSeRef.current);
       // パネルが既に無効化されていないことを確認
       if (!disabledPanels.includes(clickedNumber)) {
         // プレイヤースコア増加
@@ -251,8 +283,9 @@ export const useGameSequence = ({
         timersRef.current.push(nextRoundTimer);
       }
     }
-    // 一致しない場合は何もしない
-  }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels, shouldEndByCpuLead, endGameByCpuLead, shouldActivateQuicken, getReadyInstructionsTime]);
+    // 一致しない場合は不正解音を再生
+    playSe(wrongSeRef.current);
+  }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels, shouldEndByCpuLead, endGameByCpuLead, shouldActivateQuicken, getReadyInstructionsTime, playSe]);
 
   const startNextSequence = useCallback(() => {
     if (roundCountRef.current >= maxRounds) {

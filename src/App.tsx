@@ -37,6 +37,7 @@ function App() {
     isNumDoubleActive,
     isSecretActive,
     isHidingActive,
+    isExtendActive,
     panelNumbers, 
     playerScore,
     cpuScore,
@@ -57,7 +58,8 @@ function App() {
     ...(isShuffleActive ? ['Shuffle'] as const : []),
     ...(isNumDoubleActive ? ['Num*2'] as const : []),
     ...(isSecretActive ? ['Secret'] as const : []),
-    ...(isHidingActive ? ['Hiding'] as const : [])
+    ...(isHidingActive ? ['Hiding'] as const : []),
+    ...(isExtendActive ? ['Extend'] as const : [])
   ];
 
   // ゲームスタート時にアクティブな難易度をセット

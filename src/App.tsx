@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 //import { Timer } from './components/Timer';
 //import { useTimer } from './hooks/useTimer';
 //import { useGameTimers } from './hooks/useGameTimers';
@@ -13,6 +13,20 @@ function App() {
   const [message, setMessage] = useState<string>("");
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
+  const bgmRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const bgm = new Audio('/mdt01.mp3');
+    bgm.loop = false;
+    bgm.preload = 'auto';
+    bgmRef.current = bgm;
+
+    return () => {
+      bgm.pause();
+      bgm.currentTime = 0;
+      bgmRef.current = null;
+    };
+  }, []);
 
   const handleMessage = useCallback((msg: string) => {
     setMessage(msg);
@@ -65,6 +79,14 @@ function App() {
   // ゲームスタート時にアクティブな難易度をセット
   const startGame = useCallback(() => {
     setActiveDifficulty(difficulty);
+    const bgm = bgmRef.current;
+    if (bgm) {
+      bgm.pause();
+      bgm.currentTime = 0;
+      void bgm.play().catch((error) => {
+        console.error('BGMの再生に失敗しました:', error);
+      });
+    }
     originalStartGame();
   }, [difficulty, originalStartGame]);
 

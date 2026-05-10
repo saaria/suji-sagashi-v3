@@ -1,6 +1,19 @@
 import { useCallback, useRef, useState, useEffect } from 'react';
 import { generateShuffledArray } from '../utils/arrayUtils';
-import { Difficulty, DIFFICULTY_SETTINGS } from '../types/gameTypes';
+import {
+  Difficulty,
+  DIFFICULTY_SETTINGS,
+  SHORTEN_DIFFICULTY_SETTINGS,
+  EXTEND_CPU_WAIT_SECONDS,
+  CLEAR_POINT,
+  QUICKEN_TRIGGER_TURN,
+  SHORTEN_TRIGGER_TURN,
+  SHUFFLE_TRIGGER_TURN,
+  NUM_DOUBLE_TRIGGER_TURN,
+  SECRET_TRIGGER_TURN,
+  HIDING_TRIGGER_TURN,
+  EXTEND_TRIGGER_TURN
+} from '../types/gameTypes';
 
 interface UseGameSequenceProps {
   onMessage: (message: string) => void;
@@ -8,27 +21,6 @@ interface UseGameSequenceProps {
   difficulty: Difficulty;
   maxRounds?: number;
 }
-
-const CLEAR_POINT: Record<Difficulty, number> = {
-  Easy: 20,
-  Normal: 23,
-  Hard: 27,
-  Hell: 32
-};
-const QUICKEN_TRIGGER_TURN = 20;
-const SHORTEN_TRIGGER_TURN = 25;
-const SHUFFLE_TRIGGER_TURN = 30;
-const NUM_DOUBLE_TRIGGER_TURN = 33;
-const SECRET_TRIGGER_TURN = 35;
-const HIDING_TRIGGER_TURN = 37;
-const EXTEND_TRIGGER_TURN = 5;
-const EXTEND_CPU_WAIT_SECONDS = 4;
-const SHORTEN_DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
-  Easy: 3.5,
-  Normal: 2.5,
-  Hard: 1.5,
-  Hell: 0.75
-};
 
 export const useGameSequence = ({
   onMessage,

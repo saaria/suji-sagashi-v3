@@ -12,6 +12,7 @@ interface UseGameSequenceProps {
 const CPU_GAME_OVER_SCORE = 21;
 const SHORTEN_TRIGGER_TURN = 25;
 const SHUFFLE_TRIGGER_TURN = 30;
+const SECRET_TRIGGER_TURN = 35;
 const SHORTEN_DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
   Easy: 3.5,
   Normal: 2.5,
@@ -29,6 +30,7 @@ export const useGameSequence = ({
   const [isGameOver, setIsGameOver] = useState(false);
   const [isCpuGetBoostActive, setIsCpuGetBoostActive] = useState(false);
   const [isShortenActive, setIsShortenActive] = useState(false);
+  const [isSecretActive, setIsSecretActive] = useState(false);
   const [numberSequence, setNumberSequence] = useState<number[]>([]);
   const [panelNumbers, setPanelNumbers] = useState<number[]>([]);
   const [targetNumber, setTargetNumber] = useState<number | null>(null);
@@ -41,6 +43,7 @@ export const useGameSequence = ({
   const roundCountRef = useRef(0);
   const hasCpuGetBoostBeenUsedRef = useRef(false);
   const hasShortenBeenUsedRef = useRef(false);
+  const hasSecretBeenUsedRef = useRef(false);
   const isShortenActiveRef = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const numberSequenceRef = useRef<number[]>([]);
@@ -118,6 +121,16 @@ export const useGameSequence = ({
     return currentTurn > SHUFFLE_TRIGGER_TURN && difficulty !== 'Easy';
   }, [difficulty]);
 
+  const shouldActivateSecret = useCallback((roundCount: number, playerCurrentScore: number, cpuCurrentScore: number) => {
+    const currentTurn = roundCount + 1;
+    return (
+      !hasSecretBeenUsedRef.current &&
+      currentTurn > SECRET_TRIGGER_TURN &&
+      difficulty !== 'Easy' &&
+      cpuCurrentScore < playerCurrentScore
+    );
+  }, [difficulty]);
+
   const endGameByCpuLead = useCallback(() => {
     clearTimers();
     setCanPlayerClick(false);
@@ -125,6 +138,7 @@ export const useGameSequence = ({
     setIsGameOver(true);
     setIsCpuGetBoostActive(false);
     setIsShortenActive(false);
+    setIsSecretActive(false);
     isShortenActiveRef.current = false;
     onMessage("ゲームオーバー");
   }, [clearTimers, onMessage]);
@@ -190,6 +204,7 @@ export const useGameSequence = ({
       setIsGameRunning(false);
       setIsCpuGetBoostActive(false);
       setIsShortenActive(false);
+      setIsSecretActive(false);
       isShortenActiveRef.current = false;
       // 勝敗判定関数を呼び出し
       showGameResult();
@@ -217,6 +232,16 @@ export const useGameSequence = ({
       setIsShortenActive(true);
     }
 
+    const isSecretTurn = shouldActivateSecret(
+      roundCountRef.current,
+      playerScoreRef.current,
+      cpuScoreRef.current
+    );
+    if (isSecretTurn) {
+      hasSecretBeenUsedRef.current = true;
+      setIsSecretActive(true);
+    }
+
     // 「探す数字は...」を表示
     onMessage("探す数字は...");
     
@@ -230,7 +255,11 @@ export const useGameSequence = ({
       
       if (currentTarget !== undefined) {
         setTargetNumber(currentTarget);
-        onMessage(`${currentTarget}だ！`);
+        if (isSecretTurn) {
+          onMessage("⁇だ！");
+        } else {
+          onMessage(`${currentTarget}だ！`);
+        }
         if (shouldShufflePanelsThisTurn(roundCountRef.current)) {
           setPanelNumbers(generateShuffledArray(1, 40));
         }
@@ -267,6 +296,9 @@ export const useGameSequence = ({
             if (isCpuGetBoostTurn) {
               setIsCpuGetBoostActive(false);
             }
+            if (isSecretTurn) {
+              setIsSecretActive(false);
+            }
             const nextRoundCount = roundCountRef.current + 1;
             roundCountRef.current = nextRoundCount;
             if (shouldEndByCpuLead(cpuScoreRef.current)) {
@@ -287,17 +319,19 @@ export const useGameSequence = ({
     }, 3000); // number_instructions_timer
 
     timersRef.current.push(timer1);
-  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten, shouldShufflePanelsThisTurn]);
+  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten, shouldShufflePanelsThisTurn, shouldActivateSecret]);
 
   const startGame = useCallback(() => {
     clearTimers();
     roundCountRef.current = 0;
     hasCpuGetBoostBeenUsedRef.current = false;
     hasShortenBeenUsedRef.current = false;
+    hasSecretBeenUsedRef.current = false;
     isShortenActiveRef.current = false;
     setIsGameOver(false);
     setIsCpuGetBoostActive(false);
     setIsShortenActive(false);
+    setIsSecretActive(false);
     setTargetNumber(null);
     setPlayerScore(0);
     setCpuScore(0);
@@ -340,6 +374,7 @@ export const useGameSequence = ({
     isGameOver,
     isCpuGetBoostActive,
     isShortenActive,
+    isSecretActive,
     numberSequence,
     panelNumbers,
     targetNumber,

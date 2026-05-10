@@ -32,6 +32,7 @@ function App() {
     isGameOver,
     isCpuGetBoostActive,
     isShortenActive,
+    isSecretActive,
     panelNumbers, 
     playerScore,
     cpuScore,
@@ -47,7 +48,8 @@ function App() {
 
   const activeStatuses: StatusBadge[] = [
     ...(isCpuGetBoostActive ? ['CPUget'] as const : []),
-    ...(isShortenActive ? ['Shorten'] as const : [])
+    ...(isShortenActive ? ['Shorten'] as const : []),
+    ...(isSecretActive ? ['Secret'] as const : [])
   ];
 
   // ゲームスタート時にアクティブな難易度をセット

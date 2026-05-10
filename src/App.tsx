@@ -31,6 +31,7 @@ function App() {
     isGameRunning, 
     isGameOver,
     isCpuGetBoostActive,
+    isShortenActive,
     panelNumbers, 
     playerScore,
     cpuScore,
@@ -44,7 +45,10 @@ function App() {
     maxRounds: 40
   });
 
-  const activeStatuses: StatusBadge[] = isCpuGetBoostActive ? ['CPUget'] : [];
+  const activeStatuses: StatusBadge[] = [
+    ...(isCpuGetBoostActive ? ['CPUget'] as const : []),
+    ...(isShortenActive ? ['Shorten'] as const : [])
+  ];
 
   // ゲームスタート時にアクティブな難易度をセット
   const startGame = useCallback(() => {

@@ -10,6 +10,13 @@ interface UseGameSequenceProps {
 }
 
 const CPU_GAME_OVER_SCORE = 21;
+const SHORTEN_TRIGGER_TURN = 25;
+const SHORTEN_DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
+  Easy: 3.5,
+  Normal: 2.5,
+  Hard: 1.5,
+  Hell: 0.75
+};
 
 export const useGameSequence = ({
   onMessage,
@@ -20,6 +27,7 @@ export const useGameSequence = ({
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isCpuGetBoostActive, setIsCpuGetBoostActive] = useState(false);
+  const [isShortenActive, setIsShortenActive] = useState(false);
   const [numberSequence, setNumberSequence] = useState<number[]>([]);
   const [panelNumbers, setPanelNumbers] = useState<number[]>([]);
   const [targetNumber, setTargetNumber] = useState<number | null>(null);
@@ -31,6 +39,8 @@ export const useGameSequence = ({
   
   const roundCountRef = useRef(0);
   const hasCpuGetBoostBeenUsedRef = useRef(false);
+  const hasShortenBeenUsedRef = useRef(false);
+  const isShortenActiveRef = useRef(false);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const numberSequenceRef = useRef<number[]>([]);
   // CPU処理のタイマー参照を保持
@@ -91,18 +101,34 @@ export const useGameSequence = ({
     );
   }, [difficulty]);
 
+  const shouldActivateShorten = useCallback((roundCount: number, playerCurrentScore: number, cpuCurrentScore: number, isCpuGetBoostTurn: boolean) => {
+    const currentTurn = roundCount + 1;
+    return (
+      !hasShortenBeenUsedRef.current &&
+      !isShortenActiveRef.current &&
+      !isCpuGetBoostTurn &&
+      currentTurn > SHORTEN_TRIGGER_TURN &&
+      cpuCurrentScore < playerCurrentScore
+    );
+  }, []);
+
   const endGameByCpuLead = useCallback(() => {
     clearTimers();
     setCanPlayerClick(false);
     setIsGameRunning(false);
     setIsGameOver(true);
     setIsCpuGetBoostActive(false);
+    setIsShortenActive(false);
+    isShortenActiveRef.current = false;
     onMessage("ゲームオーバー");
   }, [clearTimers, onMessage]);
 
   // 難易度に基づくCPU待機時間を取得
-  const getCpuWaitTime = useCallback(() => {
-    return DIFFICULTY_SETTINGS[difficulty] * 1000; // ミリ秒に変換
+  const getCpuWaitTime = useCallback((isShortenEnabled: boolean) => {
+    const waitSeconds = isShortenEnabled
+      ? SHORTEN_DIFFICULTY_SETTINGS[difficulty]
+      : DIFFICULTY_SETTINGS[difficulty];
+    return waitSeconds * 1000; // ミリ秒に変換
   }, [difficulty]);
 
   // パネルクリック処理
@@ -157,6 +183,8 @@ export const useGameSequence = ({
     if (roundCountRef.current >= maxRounds) {
       setIsGameRunning(false);
       setIsCpuGetBoostActive(false);
+      setIsShortenActive(false);
+      isShortenActiveRef.current = false;
       // 勝敗判定関数を呼び出し
       showGameResult();
       return;
@@ -171,6 +199,17 @@ export const useGameSequence = ({
       hasCpuGetBoostBeenUsedRef.current = true;
     }
     setIsCpuGetBoostActive(isCpuGetBoostTurn);
+
+    if (shouldActivateShorten(
+      roundCountRef.current,
+      playerScoreRef.current,
+      cpuScoreRef.current,
+      isCpuGetBoostTurn
+    )) {
+      hasShortenBeenUsedRef.current = true;
+      isShortenActiveRef.current = true;
+      setIsShortenActive(true);
+    }
 
     // 「探す数字は...」を表示
     onMessage("探す数字は...");
@@ -189,7 +228,7 @@ export const useGameSequence = ({
 
         // CPUget補正中はプレイヤー入力を受け付けず、CPU待機時間を0にする
         setCanPlayerClick(!isCpuGetBoostTurn);
-        const cpuWaitTime = isCpuGetBoostTurn ? 0 : getCpuWaitTime();
+        const cpuWaitTime = isCpuGetBoostTurn ? 0 : getCpuWaitTime(isShortenActiveRef.current);
         
         // cpu_wait_timer (難易度に応じた秒数)
         cpuTimerRef.current = setTimeout(() => {
@@ -239,14 +278,17 @@ export const useGameSequence = ({
     }, 3000); // number_instructions_timer
 
     timersRef.current.push(timer1);
-  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost]);
+  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead, shouldActivateCpuGetBoost, shouldActivateShorten]);
 
   const startGame = useCallback(() => {
     clearTimers();
     roundCountRef.current = 0;
     hasCpuGetBoostBeenUsedRef.current = false;
+    hasShortenBeenUsedRef.current = false;
+    isShortenActiveRef.current = false;
     setIsGameOver(false);
     setIsCpuGetBoostActive(false);
+    setIsShortenActive(false);
     setTargetNumber(null);
     setPlayerScore(0);
     setCpuScore(0);
@@ -288,6 +330,7 @@ export const useGameSequence = ({
     isGameRunning,
     isGameOver,
     isCpuGetBoostActive,
+    isShortenActive,
     numberSequence,
     panelNumbers,
     targetNumber,

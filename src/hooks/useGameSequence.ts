@@ -172,14 +172,6 @@ export const useGameSequence = ({
     setCanPlayerClick(false);
     setIsGameRunning(false);
     setIsGameOver(true);
-    setIsCpuGetBoostActive(false);
-    setIsQuickenActive(false);
-    setIsShortenActive(false);
-    setIsShuffleActive(false);
-    setIsNumDoubleActive(false);
-    setIsSecretActive(false);
-    setIsHidingActive(false);
-    isShortenActiveRef.current = false;
     onMessage("ゲームオーバー");
   }, [clearTimers, onMessage]);
 
@@ -245,14 +237,6 @@ export const useGameSequence = ({
   const startNextSequence = useCallback(() => {
     if (roundCountRef.current >= maxRounds) {
       setIsGameRunning(false);
-      setIsCpuGetBoostActive(false);
-      setIsQuickenActive(false);
-      setIsShortenActive(false);
-      setIsShuffleActive(false);
-      setIsNumDoubleActive(false);
-      setIsSecretActive(false);
-      setIsHidingActive(false);
-      isShortenActiveRef.current = false;
       // 勝敗判定関数を呼び出し
       showGameResult();
       return;
@@ -368,17 +352,20 @@ export const useGameSequence = ({
           // ready_instructions_timer (2秒)
           const readyInstructionsTime = getReadyInstructionsTime(isQuickenTurn);
           const timer3 = setTimeout(() => {
-            if (isCpuGetBoostTurn) {
-              setIsCpuGetBoostActive(false);
-            }
-            if (isSecretTurn) {
-              setIsSecretActive(false);
-            }
             const nextRoundCount = roundCountRef.current + 1;
             roundCountRef.current = nextRoundCount;
             if (shouldEndByCpuLead(cpuScoreRef.current)) {
               endGameByCpuLead();
               return;
+            }
+
+            if (nextRoundCount < maxRounds) {
+              if (isCpuGetBoostTurn) {
+                setIsCpuGetBoostActive(false);
+              }
+              if (isSecretTurn) {
+                setIsSecretActive(false);
+              }
             }
             startNextSequence();
           }, readyInstructionsTime);

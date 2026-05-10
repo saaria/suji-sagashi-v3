@@ -13,8 +13,6 @@ function App() {
   const [message, setMessage] = useState<string>("");
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
-  // アクティブなステータスバッジを管理する状態
-  const [activeStatuses, setActiveStatuses] = useState<StatusBadge[]>([]);
 
   const handleMessage = useCallback((msg: string) => {
     setMessage(msg);
@@ -32,6 +30,7 @@ function App() {
     startGame: originalStartGame, 
     isGameRunning, 
     isGameOver,
+    isCpuGetBoostActive,
     panelNumbers, 
     playerScore,
     cpuScore,
@@ -45,11 +44,11 @@ function App() {
     maxRounds: 40
   });
 
+  const activeStatuses: StatusBadge[] = isCpuGetBoostActive ? ['CPUget'] : [];
+
   // ゲームスタート時にアクティブな難易度をセット
   const startGame = useCallback(() => {
     setActiveDifficulty(difficulty);
-    // ゲーム開始時にステータスバッジはリセット
-    setActiveStatuses([]);
     originalStartGame();
   }, [difficulty, originalStartGame]);
 

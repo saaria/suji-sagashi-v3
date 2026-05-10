@@ -10,10 +10,12 @@ export const Badge: React.FC<BadgeProps> = ({
   label,
   isActive
 }) => {
+  const isCpuGetHighlighted = isActive && label === 'CPUget';
+
   // バッジのスタイル設定
   const badgeStyle = {
-    backgroundColor: isActive ? '#669933' : '#006633',
-    color: isActive ? '#ccff33' : '#00cc33',
+    backgroundColor: isCpuGetHighlighted ? '#c8ff74' : (isActive ? '#669933' : '#006633'),
+    color: isCpuGetHighlighted ? '#1f3e00' : (isActive ? '#ccff33' : '#00cc33'),
     padding: '0.25rem 0.75rem',
     borderRadius: '0.375rem',
     fontWeight: 'bold',

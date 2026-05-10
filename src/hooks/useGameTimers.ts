@@ -5,15 +5,17 @@ interface GameTimers {
   clearAllTimers: () => void;
 }
 
+type TimeoutHandle = ReturnType<typeof setTimeout>;
+
 export const useGameTimers = (
   onMessage: (message: string) => void,
   onCpuAction: () => void,
   maxRounds: number = 40
 ): GameTimers => {
   const timerRefs = useRef<{
-    numberInstructions: NodeJS.Timeout | null;
-    cpuWait: NodeJS.Timeout | null;
-    readyInstructions: NodeJS.Timeout | null;
+    numberInstructions: TimeoutHandle | null;
+    cpuWait: TimeoutHandle | null;
+    readyInstructions: TimeoutHandle | null;
   }>({
     numberInstructions: null,
     cpuWait: null,

@@ -29,10 +29,10 @@ export const useGameSequence = ({
   const [canPlayerClick, setCanPlayerClick] = useState(false);
   
   const roundCountRef = useRef(0);
-  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const numberSequenceRef = useRef<number[]>([]);
   // CPU処理のタイマー参照を保持
-  const cpuTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const cpuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // スコアの参照を保持
   const playerScoreRef = useRef(0);

@@ -17,7 +17,7 @@ export const useTimer = ({ initialSeconds, onComplete }: UseTimerProps) => {
   }, [initialSeconds]);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     if (isRunning && seconds > 0) {
       intervalId = setInterval(() => {
@@ -32,7 +32,11 @@ export const useTimer = ({ initialSeconds, onComplete }: UseTimerProps) => {
       }, 1000);
     }
 
-    return () => clearInterval(intervalId);
+    return () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+      }
+    };
   }, [isRunning, seconds, onComplete]);
 
   return {

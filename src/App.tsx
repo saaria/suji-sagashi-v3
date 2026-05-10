@@ -32,6 +32,7 @@ function App() {
     isGameOver,
     isCpuGetBoostActive,
     isShortenActive,
+    isShuffleActive,
     isNumDoubleActive,
     isSecretActive,
     isHidingActive,
@@ -51,6 +52,7 @@ function App() {
   const activeStatuses: StatusBadge[] = [
     ...(isCpuGetBoostActive ? ['CPUget'] as const : []),
     ...(isShortenActive ? ['Shorten'] as const : []),
+    ...(isShuffleActive ? ['Shuffle'] as const : []),
     ...(isNumDoubleActive ? ['Num*2'] as const : []),
     ...(isSecretActive ? ['Secret'] as const : []),
     ...(isHidingActive ? ['Hiding'] as const : [])

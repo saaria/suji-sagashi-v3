@@ -32,6 +32,7 @@ export const useGameSequence = ({
   const [isGameOver, setIsGameOver] = useState(false);
   const [isCpuGetBoostActive, setIsCpuGetBoostActive] = useState(false);
   const [isShortenActive, setIsShortenActive] = useState(false);
+  const [isShuffleActive, setIsShuffleActive] = useState(false);
   const [isNumDoubleActive, setIsNumDoubleActive] = useState(false);
   const [isSecretActive, setIsSecretActive] = useState(false);
   const [isHidingActive, setIsHidingActive] = useState(false);
@@ -123,7 +124,7 @@ export const useGameSequence = ({
 
   const shouldShufflePanelsThisTurn = useCallback((roundCount: number) => {
     const currentTurn = roundCount + 1;
-    return currentTurn > SHUFFLE_TRIGGER_TURN && difficulty !== 'Easy';
+    return currentTurn >= SHUFFLE_TRIGGER_TURN && difficulty !== 'Easy';
   }, [difficulty]);
 
   const shouldActivateNumDouble = useCallback((roundCount: number) => {
@@ -158,6 +159,7 @@ export const useGameSequence = ({
     setIsGameOver(true);
     setIsCpuGetBoostActive(false);
     setIsShortenActive(false);
+    setIsShuffleActive(false);
     setIsNumDoubleActive(false);
     setIsSecretActive(false);
     setIsHidingActive(false);
@@ -226,6 +228,7 @@ export const useGameSequence = ({
       setIsGameRunning(false);
       setIsCpuGetBoostActive(false);
       setIsShortenActive(false);
+      setIsShuffleActive(false);
       setIsNumDoubleActive(false);
       setIsSecretActive(false);
       setIsHidingActive(false);
@@ -263,6 +266,9 @@ export const useGameSequence = ({
 
     const isNumDoubleTurn = shouldActivateNumDouble(roundCountRef.current);
     setIsNumDoubleActive(isNumDoubleTurn);
+
+    const isShuffleTurn = shouldShufflePanelsThisTurn(roundCountRef.current);
+    setIsShuffleActive(isShuffleTurn);
 
     const isSecretTurn = shouldActivateSecret(
       roundCountRef.current,
@@ -303,7 +309,7 @@ export const useGameSequence = ({
           const displayTarget = isNumDoubleTurn ? currentTarget * 2 : currentTarget;
           onMessage(`${displayTarget}だ！`);
         }
-        if (shouldShufflePanelsThisTurn(roundCountRef.current)) {
+        if (isShuffleTurn) {
           setPanelNumbers(generateShuffledArray(1, 40));
         }
 
@@ -375,6 +381,7 @@ export const useGameSequence = ({
     setIsGameOver(false);
     setIsCpuGetBoostActive(false);
     setIsShortenActive(false);
+    setIsShuffleActive(false);
     setIsNumDoubleActive(false);
     setIsSecretActive(false);
     setIsHidingActive(false);
@@ -420,6 +427,7 @@ export const useGameSequence = ({
     isGameOver,
     isCpuGetBoostActive,
     isShortenActive,
+    isShuffleActive,
     isNumDoubleActive,
     isSecretActive,
     isHidingActive,

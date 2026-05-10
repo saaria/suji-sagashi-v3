@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 //import { Timer } from './components/Timer';
 //import { useTimer } from './hooks/useTimer';
 //import { useGameTimers } from './hooks/useGameTimers';
@@ -31,8 +31,8 @@ function App() {
   const { 
     startGame: originalStartGame, 
     isGameRunning, 
+    isGameOver,
     panelNumbers, 
-    targetNumber,
     playerScore,
     cpuScore,
     disabledPanels,
@@ -108,18 +108,20 @@ function App() {
         </div>
 
         {/* ゲームの状態表示 */}
-        {isGameRunning && (
+        {(isGameRunning || isGameOver) && (
           <div style={{
             textAlign: 'center',
             marginBottom: '1rem',
             padding: '0.5rem',
-            backgroundColor: canPlayerClick ? '#dcfce7' : '#fee2e2',
+            backgroundColor: isGameOver ? '#fecaca' : (canPlayerClick ? '#dcfce7' : '#fee2e2'),
             borderRadius: '0.375rem',
             color: '#000000'
           }}>
-            {canPlayerClick 
+            {isGameOver
+              ? 'ゲームオーバー'
+              : (canPlayerClick 
               ? '今すぐクリックしてください！' 
-              : 'お待ちください...'}
+              : 'お待ちください...')}
           </div>
         )}
 
@@ -127,6 +129,7 @@ function App() {
         <NumberPanel 
           numbers={panelNumbers} 
           disabledNumbers={disabledPanels}
+          isAllDisabled={!isGameRunning}
           onPanelClick={handlePanelClick}
         />
         

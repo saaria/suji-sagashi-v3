@@ -1,12 +1,14 @@
 interface NumberPanelProps {
   numbers: number[];
   disabledNumbers: number[];
+  isAllDisabled?: boolean;
   onPanelClick?: (number: number) => void;
 }
 
 export const NumberPanel: React.FC<NumberPanelProps> = ({ 
   numbers,
   disabledNumbers,
+  isAllDisabled = false,
   onPanelClick 
 }) => {
   // スタイルを直接指定
@@ -34,7 +36,7 @@ export const NumberPanel: React.FC<NumberPanelProps> = ({
   return (
     <div style={containerStyle}>
       {numbers.map((number, index) => {
-        const isDisabled = disabledNumbers.includes(number);
+        const isDisabled = isAllDisabled || disabledNumbers.includes(number);
         
         // ボタンのスタイルを動的に決定
         const buttonStyle = {

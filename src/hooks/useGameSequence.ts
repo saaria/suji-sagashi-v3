@@ -9,6 +9,8 @@ interface UseGameSequenceProps {
   maxRounds?: number;
 }
 
+const CPU_GAME_OVER_SCORE = 21;
+
 export const useGameSequence = ({
   onMessage,
   onCpuAction,
@@ -16,6 +18,7 @@ export const useGameSequence = ({
   maxRounds = 40
 }: UseGameSequenceProps) => {
   const [isGameRunning, setIsGameRunning] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
   const [numberSequence, setNumberSequence] = useState<number[]>([]);
   const [panelNumbers, setPanelNumbers] = useState<number[]>([]);
   const [targetNumber, setTargetNumber] = useState<number | null>(null);
@@ -72,6 +75,18 @@ export const useGameSequence = ({
     }
   }, []);
 
+  const shouldEndByCpuLead = useCallback((cpuCurrentScore: number) => {
+    return cpuCurrentScore >= CPU_GAME_OVER_SCORE;
+  }, []);
+
+  const endGameByCpuLead = useCallback(() => {
+    clearTimers();
+    setCanPlayerClick(false);
+    setIsGameRunning(false);
+    setIsGameOver(true);
+    onMessage("ゲームオーバー");
+  }, [clearTimers, onMessage]);
+
   // 難易度に基づくCPU待機時間を取得
   const getCpuWaitTime = useCallback(() => {
     return DIFFICULTY_SETTINGS[difficulty] * 1000; // ミリ秒に変換
@@ -87,7 +102,11 @@ export const useGameSequence = ({
       // パネルが既に無効化されていないことを確認
       if (!disabledPanels.includes(clickedNumber)) {
         // プレイヤースコア増加
-        setPlayerScore(prevScore => prevScore + 1);
+        setPlayerScore(prevScore => {
+          const nextScore = prevScore + 1;
+          playerScoreRef.current = nextScore;
+          return nextScore;
+        });
         
         // パネルを無効化
         setDisabledPanels(prevDisabled => [...prevDisabled, clickedNumber]);
@@ -106,7 +125,12 @@ export const useGameSequence = ({
         
         // 次のラウンドへ進むタイマーを設定
         const nextRoundTimer = setTimeout(() => {
-          roundCountRef.current++;
+          const nextRoundCount = roundCountRef.current + 1;
+          roundCountRef.current = nextRoundCount;
+          if (shouldEndByCpuLead(cpuScoreRef.current)) {
+            endGameByCpuLead();
+            return;
+          }
           startNextSequence();
         }, 2000); // ready_instructions_timer
         
@@ -114,7 +138,7 @@ export const useGameSequence = ({
       }
     }
     // 一致しない場合は何もしない
-  }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels]);
+  }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels, shouldEndByCpuLead, endGameByCpuLead]);
 
   const startNextSequence = useCallback(() => {
     if (roundCountRef.current >= maxRounds) {
@@ -151,7 +175,11 @@ export const useGameSequence = ({
           // disabledPanelsに現在のターゲットが含まれていなければCPUが取得する
           if (!disabledPanels.includes(currentTarget)) {
             // CPUスコアを増加
-            setCpuScore(prevScore => prevScore + 1);
+            setCpuScore(prevScore => {
+              const nextScore = prevScore + 1;
+              cpuScoreRef.current = nextScore;
+              return nextScore;
+            });
             
             // 現在のターゲット数字に対応するパネルを無効化
             setDisabledPanels(prevDisabled => [...prevDisabled, currentTarget]);
@@ -166,7 +194,12 @@ export const useGameSequence = ({
 
           // ready_instructions_timer (2秒)
           const timer3 = setTimeout(() => {
-            roundCountRef.current++;
+            const nextRoundCount = roundCountRef.current + 1;
+            roundCountRef.current = nextRoundCount;
+            if (shouldEndByCpuLead(cpuScoreRef.current)) {
+              endGameByCpuLead();
+              return;
+            }
             startNextSequence();
           }, 2000);
 
@@ -181,14 +214,17 @@ export const useGameSequence = ({
     }, 3000); // number_instructions_timer
 
     timersRef.current.push(timer1);
-  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime]);
+  }, [onMessage, onCpuAction, maxRounds, disabledPanels, showGameResult, getCpuWaitTime, shouldEndByCpuLead, endGameByCpuLead]);
 
   const startGame = useCallback(() => {
     clearTimers();
     roundCountRef.current = 0;
+    setIsGameOver(false);
     setTargetNumber(null);
     setPlayerScore(0);
     setCpuScore(0);
+    playerScoreRef.current = 0;
+    cpuScoreRef.current = 0;
     setDisabledPanels([]);
     setCanPlayerClick(false);
     
@@ -223,6 +259,7 @@ export const useGameSequence = ({
 
   return {
     isGameRunning,
+    isGameOver,
     numberSequence,
     panelNumbers,
     targetNumber,

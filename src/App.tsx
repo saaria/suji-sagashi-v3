@@ -14,17 +14,25 @@ function App() {
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const bgmRef = useRef<HTMLAudioElement | null>(null);
+  const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const bgm = new Audio('/mdt01.mp3');
+    const cpuGetSe = new Audio('/push03.wav');
     bgm.loop = false;
     bgm.preload = 'auto';
+    cpuGetSe.loop = false;
+    cpuGetSe.preload = 'auto';
     bgmRef.current = bgm;
+    cpuGetSeRef.current = cpuGetSe;
 
     return () => {
       bgm.pause();
       bgm.currentTime = 0;
+      cpuGetSe.pause();
+      cpuGetSe.currentTime = 0;
       bgmRef.current = null;
+      cpuGetSeRef.current = null;
     };
   }, []);
 
@@ -33,7 +41,13 @@ function App() {
   }, []);
 
   const handleCpuAction = useCallback(() => {
-    console.log("cpu get");
+    const cpuGetSe = cpuGetSeRef.current;
+    if (!cpuGetSe) return;
+    cpuGetSe.pause();
+    cpuGetSe.currentTime = 0;
+    void cpuGetSe.play().catch((error) => {
+      console.error('CPU効果音の再生に失敗しました:', error);
+    });
   }, []);
 
   const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {

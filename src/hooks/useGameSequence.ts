@@ -241,48 +241,51 @@ export const useGameSequence = ({
     
     // クリックされた数字がターゲットと一致するか確認
     if (clickedNumber === targetNumber) {
-      playSe(correctSeRef.current);
       // パネルが既に無効化されていないことを確認
-      if (!disabledPanels.includes(clickedNumber)) {
-        // プレイヤースコア増加
-        setPlayerScore(prevScore => {
-          const nextScore = prevScore + 1;
-          playerScoreRef.current = nextScore;
-          return nextScore;
-        });
-        
-        // パネルを無効化
-        setDisabledPanels(prevDisabled => [...prevDisabled, clickedNumber]);
-        
-        // プレイヤーが勝ったメッセージ
-        onMessage(`${clickedNumber}をゲットしました！`);
-        
-        // CPUのタイマーをキャンセル
-        if (cpuTimerRef.current) {
-          clearTimeout(cpuTimerRef.current);
-          cpuTimerRef.current = null;
-        }
-        
-        // プレイヤークリックを無効化
-        setCanPlayerClick(false);
-        
-        const isQuickenTurn = shouldActivateQuicken(roundCountRef.current);
-        const readyInstructionsTime = getReadyInstructionsTime(isQuickenTurn);
+      if (disabledPanels.includes(clickedNumber)) return;
 
-        // 次のラウンドへ進むタイマーを設定
-        const nextRoundTimer = setTimeout(() => {
-          const nextRoundCount = roundCountRef.current + 1;
-          roundCountRef.current = nextRoundCount;
-          if (shouldEndByCpuLead(cpuScoreRef.current)) {
-            endGameByCpuLead();
-            return;
-          }
-          startNextSequence();
-        }, readyInstructionsTime); // ready_instructions_timer
-        
-        timersRef.current.push(nextRoundTimer);
+      playSe(correctSeRef.current);
+
+      // プレイヤースコア増加
+      setPlayerScore(prevScore => {
+        const nextScore = prevScore + 1;
+        playerScoreRef.current = nextScore;
+        return nextScore;
+      });
+      
+      // パネルを無効化
+      setDisabledPanels(prevDisabled => [...prevDisabled, clickedNumber]);
+      
+      // プレイヤーが勝ったメッセージ
+      onMessage(`${clickedNumber}をゲットしました！`);
+      
+      // CPUのタイマーをキャンセル
+      if (cpuTimerRef.current) {
+        clearTimeout(cpuTimerRef.current);
+        cpuTimerRef.current = null;
       }
+      
+      // プレイヤークリックを無効化
+      setCanPlayerClick(false);
+      
+      const isQuickenTurn = shouldActivateQuicken(roundCountRef.current);
+      const readyInstructionsTime = getReadyInstructionsTime(isQuickenTurn);
+
+      // 次のラウンドへ進むタイマーを設定
+      const nextRoundTimer = setTimeout(() => {
+        const nextRoundCount = roundCountRef.current + 1;
+        roundCountRef.current = nextRoundCount;
+        if (shouldEndByCpuLead(cpuScoreRef.current)) {
+          endGameByCpuLead();
+          return;
+        }
+        startNextSequence();
+      }, readyInstructionsTime); // ready_instructions_timer
+      
+      timersRef.current.push(nextRoundTimer);
+      return;
     }
+
     // 一致しない場合は不正解音を再生
     playSe(wrongSeRef.current);
   }, [canPlayerClick, isGameRunning, targetNumber, onMessage, disabledPanels, shouldEndByCpuLead, endGameByCpuLead, shouldActivateQuicken, getReadyInstructionsTime, playSe]);

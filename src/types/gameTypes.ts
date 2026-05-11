@@ -1,5 +1,6 @@
 // 難易度の型定義
 export type Difficulty = 'Easy' | 'Normal' | 'Hard' | 'Hell';
+export type DifficultyAdjustment = '+1' | '+2' | '+3' | '+4';
 
 // 難易度ごとのCPU待機時間設定（秒）
 export const DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
@@ -47,4 +48,4 @@ export type StatusBadge =
   | 'Extend';
 
 // すべてのバッジタイプを統合
-export type BadgeType = Difficulty | StatusBadge; 
+export type BadgeType = Difficulty | DifficultyAdjustment | StatusBadge; 

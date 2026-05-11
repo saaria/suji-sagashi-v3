@@ -27,6 +27,10 @@ export const CLEAR_POINT: Record<Difficulty, number> = {
   Hell: 32
 };
 
+export const getCpuGameOverScore = (difficulty: Difficulty, maxRounds: number): number => {
+  return maxRounds - CLEAR_POINT[difficulty] + 1;
+};
+
 // トリガー発動ターン数の定義
 export const QUICKEN_TRIGGER_TURN = 16;
 export const SHORTEN_TRIGGER_TURN = 21;

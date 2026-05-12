@@ -241,6 +241,15 @@ function App() {
               activeStatuses={activeStatuses}
             />
           </section>
+
+          <section className="log-row">
+            <textarea
+              className="game-log"
+              readOnly
+              aria-label="game-log"
+              value=""
+            />
+          </section>
         </main>
       </div>
     </div>

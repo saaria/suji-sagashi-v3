@@ -201,37 +201,35 @@ function App() {
               CPU: <span style={{ fontWeight: 'bold' }}>{cpuScore}</span>
             </div>
           </div>
-          {activeDifficulty && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '1rem',
-              marginBottom: '1rem',
-              color: '#000000'
-            }}>
-              <div style={{ minWidth: '260px', textAlign: 'left' }}>
-                <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                  Player Progress: {playerScore}/{scoreProgressMax.player}
-                </div>
-                <progress
-                  value={Math.min(playerScore, scoreProgressMax.player)}
-                  max={scoreProgressMax.player || 1}
-                  style={{ width: '100%', height: '1rem' }}
-                />
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+            color: '#000000'
+          }}>
+            <div style={{ minWidth: '260px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                Player Progress: {playerScore}/{scoreProgressMax.player}
               </div>
-              <div style={{ minWidth: '260px', textAlign: 'left' }}>
-                <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                  CPU Progress: {cpuScore}/{scoreProgressMax.cpu}
-                </div>
-                <progress
-                  value={Math.min(cpuScore, scoreProgressMax.cpu)}
-                  max={scoreProgressMax.cpu || 1}
-                  style={{ width: '100%', height: '1rem' }}
-                />
-              </div>
+              <progress
+                value={Math.min(playerScore, scoreProgressMax.player)}
+                max={scoreProgressMax.player || 1}
+                style={{ width: '100%', height: '1rem' }}
+              />
             </div>
-          )}
+            <div style={{ minWidth: '260px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                CPU Progress: {cpuScore}/{scoreProgressMax.cpu}
+              </div>
+              <progress
+                value={Math.min(cpuScore, scoreProgressMax.cpu)}
+                max={scoreProgressMax.cpu || 1}
+                style={{ width: '100%', height: '1rem' }}
+              />
+            </div>
+          </div>
           
           {/* 難易度選択 */}
           <div style={{ maxWidth: '300px', margin: '0 auto', marginBottom: '1rem' }}>

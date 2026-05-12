@@ -1,5 +1,5 @@
 import React from 'react';
-import { Difficulty, StatusBadge } from '../types/gameTypes';
+import { Difficulty, DifficultyAdjustment, StatusBadge } from '../types/gameTypes';
 import { Badge } from './Badge';
 
 interface BadgeGroupProps {
@@ -15,6 +15,7 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
 }) => {
   // すべての難易度
   const difficulties: Difficulty[] = ['Easy', 'Normal', 'Hard', 'Hell'];
+  const difficultyAdjustments: DifficultyAdjustment[] = ['+1', '+2', '+3', '+4'];
   
   // すべてのステータスバッジ
   const statusBadges: StatusBadge[] = ['CPUget', 'Shorten', 'Quicken', 'Shuffle', 'Num*2', 'Hiding', 'Secret', 'Extend'];
@@ -45,6 +46,13 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
             key={difficulty}
             label={difficulty}
             isActive={activeDifficulty === difficulty}
+          />
+        ))}
+        {difficultyAdjustments.map((adjustment) => (
+          <Badge
+            key={adjustment}
+            label={adjustment}
+            isActive={false}
           />
         ))}
       </div>

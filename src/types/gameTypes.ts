@@ -1,5 +1,6 @@
 // 難易度の型定義
 export type Difficulty = 'Easy' | 'Normal' | 'Hard' | 'Hell';
+export type DifficultyAdjustment = '+1' | '+2' | '+3' | '+4';
 
 // 難易度ごとのCPU待機時間設定（秒）
 export const DIFFICULTY_SETTINGS: Record<Difficulty, number> = {
@@ -26,6 +27,10 @@ export const CLEAR_POINT: Record<Difficulty, number> = {
   Hell: 32
 };
 
+export const getCpuGameOverScore = (difficulty: Difficulty, maxRounds: number): number => {
+  return maxRounds - CLEAR_POINT[difficulty] + 1;
+};
+
 // トリガー発動ターン数の定義
 export const QUICKEN_TRIGGER_TURN = 16;
 export const SHORTEN_TRIGGER_TURN = 21;
@@ -47,4 +52,4 @@ export type StatusBadge =
   | 'Extend';
 
 // すべてのバッジタイプを統合
-export type BadgeType = Difficulty | StatusBadge; 
+export type BadgeType = Difficulty | DifficultyAdjustment | StatusBadge; 

@@ -6,13 +6,16 @@ import { useGameSequence } from './hooks/useGameSequence';
 import { NumberPanel } from './components/NumberPanel';
 import { DifficultySelector } from './components/DifficultySelector';
 import { BadgeGroup } from './components/BadgeGroup';
-import { Difficulty, StatusBadge } from './types/gameTypes';
+import { CLEAR_POINT, Difficulty, StatusBadge, getCpuGameOverScore } from './types/gameTypes';
+
+const MAX_ROUNDS = 40;
 
 function App() {
   // メッセージを表示する状態
   const [message, setMessage] = useState<string>("");
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
+  const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
   const eventSeRef = useRef<HTMLAudioElement | null>(null);
@@ -94,7 +97,7 @@ function App() {
     onMessage: handleMessage,
     onCpuAction: handleCpuAction,
     difficulty: difficulty,
-    maxRounds: 40
+    maxRounds: MAX_ROUNDS
   });
 
   const activeStatuses: StatusBadge[] = [
@@ -155,6 +158,9 @@ function App() {
   // ゲームスタート時にアクティブな難易度をセット
   const startGame = useCallback(() => {
     setActiveDifficulty(difficulty);
+    const playerMax = CLEAR_POINT[difficulty];
+    const cpuMax = getCpuGameOverScore(difficulty, MAX_ROUNDS);
+    setScoreProgressMax({ player: playerMax, cpu: cpuMax });
     const bgm = bgmRef.current;
     if (bgm) {
       bgm.pause();
@@ -193,6 +199,35 @@ function App() {
             </div>
             <div style={{ fontSize: '1.125rem' }}>
               CPU: <span style={{ fontWeight: 'bold' }}>{cpuScore}</span>
+            </div>
+          </div>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1rem',
+            color: '#000000'
+          }}>
+            <div style={{ minWidth: '260px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                Player Progress: {playerScore}/{scoreProgressMax.player}
+              </div>
+              <progress
+                value={Math.min(playerScore, scoreProgressMax.player)}
+                max={scoreProgressMax.player || 1}
+                style={{ width: '100%', height: '1rem' }}
+              />
+            </div>
+            <div style={{ minWidth: '260px', textAlign: 'left' }}>
+              <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
+                CPU Progress: {cpuScore}/{scoreProgressMax.cpu}
+              </div>
+              <progress
+                value={Math.min(cpuScore, scoreProgressMax.cpu)}
+                max={scoreProgressMax.cpu || 1}
+                style={{ width: '100%', height: '1rem' }}
+              />
             </div>
           </div>
           

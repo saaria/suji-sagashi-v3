@@ -6,6 +6,7 @@ import {
   SHORTEN_DIFFICULTY_SETTINGS,
   EXTEND_CPU_WAIT_SECONDS,
   CLEAR_POINT,
+  getCpuGameOverScore,
   QUICKEN_TRIGGER_TURN,
   SHORTEN_TRIGGER_TURN,
   SHUFFLE_TRIGGER_TURN,
@@ -132,7 +133,7 @@ export const useGameSequence = ({
   }, []);
 
   const shouldEndByCpuLead = useCallback((cpuCurrentScore: number) => {
-    const cpuGameOverScore = maxRounds - CLEAR_POINT[difficulty] + 1;
+    const cpuGameOverScore = getCpuGameOverScore(difficulty, maxRounds);
     return cpuCurrentScore >= cpuGameOverScore;
   }, [difficulty, maxRounds]);
 

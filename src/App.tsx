@@ -7,12 +7,15 @@ import { BadgeGroup } from './components/BadgeGroup';
 import { CLEAR_POINT, Difficulty, StatusBadge, getCpuGameOverScore } from './types/gameTypes';
 
 const MAX_ROUNDS = 40;
+const IDLE_PANEL_NUMBERS = Array.from({ length: MAX_ROUNDS }, (_, index) => index + 1);
 
 function App() {
   const [message, setMessage] = useState<string>('');
+  const [logMessages, setLogMessages] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
+  const logAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
   const eventSeRef = useRef<HTMLAudioElement | null>(null);
@@ -54,8 +57,17 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const logArea = logAreaRef.current;
+    if (!logArea) return;
+    logArea.scrollTop = logArea.scrollHeight;
+  }, [logMessages]);
+
   const handleMessage = useCallback((msg: string) => {
     setMessage(msg);
+    if (/^(CPUが)?\d+をゲットしました/.test(msg)) {
+      setLogMessages((prev) => [...prev, msg]);
+    }
   }, []);
 
   const handleCpuAction = useCallback(() => {
@@ -152,6 +164,7 @@ function App() {
   ]);
 
   const startGame = useCallback(() => {
+    setLogMessages([]);
     setActiveDifficulty(difficulty);
     const playerMax = CLEAR_POINT[difficulty];
     const cpuMax = getCpuGameOverScore(difficulty, MAX_ROUNDS);
@@ -169,6 +182,9 @@ function App() {
 
   const playerProgressMax = scoreProgressMax.player || CLEAR_POINT[difficulty];
   const cpuProgressMax = scoreProgressMax.cpu || getCpuGameOverScore(difficulty, MAX_ROUNDS);
+  const hasGameStarted = activeDifficulty !== null;
+  const displayPanelNumbers = panelNumbers.length > 0 ? panelNumbers : IDLE_PANEL_NUMBERS;
+  const isPanelTextHidden = !hasGameStarted || isHidingActive;
 
   return (
     <div className="app-shell">
@@ -227,10 +243,10 @@ function App() {
 
           <section className="numbers-row">
             <NumberPanel
-              numbers={panelNumbers}
+              numbers={displayPanelNumbers}
               disabledNumbers={disabledPanels}
               isAllDisabled={!isGameRunning}
-              isTextHidden={isHidingActive}
+              isTextHidden={isPanelTextHidden}
               onPanelClick={handlePanelClick}
             />
           </section>
@@ -244,10 +260,11 @@ function App() {
 
           <section className="log-row">
             <textarea
+              ref={logAreaRef}
               className="game-log"
               readOnly
               aria-label="game-log"
-              value=""
+              value={logMessages.join('\n')}
             />
           </section>
         </main>

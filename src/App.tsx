@@ -63,12 +63,16 @@ function App() {
     logArea.scrollTop = logArea.scrollHeight;
   }, [logMessages]);
 
+  const appendLogMessage = useCallback((msg: string) => {
+    setLogMessages((prev) => [...prev, msg]);
+  }, []);
+
   const handleMessage = useCallback((msg: string) => {
     setMessage(msg);
     if (/^(CPUが)?\d+をゲットしました/.test(msg)) {
-      setLogMessages((prev) => [...prev, msg]);
+      appendLogMessage(msg);
     }
-  }, []);
+  }, [appendLogMessage]);
 
   const handleCpuAction = useCallback(() => {
     const cpuGetSe = cpuGetSeRef.current;
@@ -121,6 +125,33 @@ function App() {
 
   useEffect(() => {
     const prev = prevStatusRef.current;
+    const activatedMessages: string[] = [];
+
+    if (!prev.shorten && isShortenActive) {
+      activatedMessages.push('Shorten: CPUの待機時間が短縮されます');
+    }
+    if (!prev.quicken && isQuickenActive) {
+      activatedMessages.push('Quicken: ゲーム進行速度が短縮されます');
+    }
+    if (!prev.numDouble && isNumDoubleActive) {
+      activatedMessages.push('Num*2: 指示数字が2倍で表示されます');
+    }
+    if (!prev.extend && isExtendActive) {
+      activatedMessages.push('Extend: CPUの待機時間が延長されます');
+    }
+    if (!prev.shuffle && isShuffleActive) {
+      activatedMessages.push('Shuffle: パネルがシャッフルされます');
+    }
+    if (!prev.cpuGet && isCpuGetBoostActive) {
+      activatedMessages.push('CPUget: CPUがパネルを獲得します');
+    }
+    if (!prev.hiding && isHidingActive) {
+      activatedMessages.push('Hiding: パネルの数値が非表示になります');
+    }
+    if (!prev.secret && isSecretActive) {
+      activatedMessages.push('Secret: 指示数字が不明になります');
+    }
+
     const activated =
       (!prev.cpuGet && isCpuGetBoostActive) ||
       (!prev.shorten && isShortenActive) ||
@@ -140,6 +171,10 @@ function App() {
           console.error('イベント効果音の再生に失敗しました:', error);
         });
       }
+    }
+
+    if (activatedMessages.length > 0) {
+      setLogMessages((prevLogs) => [...prevLogs, ...activatedMessages]);
     }
 
     prevStatusRef.current = {

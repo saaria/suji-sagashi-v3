@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-//import { Timer } from './components/Timer';
-//import { useTimer } from './hooks/useTimer';
-//import { useGameTimers } from './hooks/useGameTimers';
+import './App.css';
 import { useGameSequence } from './hooks/useGameSequence';
 import { NumberPanel } from './components/NumberPanel';
 import { DifficultySelector } from './components/DifficultySelector';
@@ -9,13 +7,15 @@ import { BadgeGroup } from './components/BadgeGroup';
 import { CLEAR_POINT, Difficulty, StatusBadge, getCpuGameOverScore } from './types/gameTypes';
 
 const MAX_ROUNDS = 40;
+const IDLE_PANEL_NUMBERS = Array.from({ length: MAX_ROUNDS }, (_, index) => index + 1);
 
 function App() {
-  // メッセージを表示する状態
-  const [message, setMessage] = useState<string>("");
+  const [message, setMessage] = useState<string>('');
+  const [logMessages, setLogMessages] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
+  const logAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
   const eventSeRef = useRef<HTMLAudioElement | null>(null);
@@ -57,9 +57,22 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const logArea = logAreaRef.current;
+    if (!logArea) return;
+    logArea.scrollTop = logArea.scrollHeight;
+  }, [logMessages]);
+
+  const appendLogMessage = useCallback((msg: string) => {
+    setLogMessages((prev) => [...prev, msg]);
+  }, []);
+
   const handleMessage = useCallback((msg: string) => {
     setMessage(msg);
-  }, []);
+    if (/^(CPUが)?\d+をゲットしました/.test(msg)) {
+      appendLogMessage(msg);
+    }
+  }, [appendLogMessage]);
 
   const handleCpuAction = useCallback(() => {
     const cpuGetSe = cpuGetSeRef.current;
@@ -75,9 +88,9 @@ function App() {
     setDifficulty(newDifficulty);
   }, []);
 
-  const { 
-    startGame: originalStartGame, 
-    isGameRunning, 
+  const {
+    startGame: originalStartGame,
+    isGameRunning,
     isGameOver,
     isCpuGetBoostActive,
     isQuickenActive,
@@ -87,11 +100,10 @@ function App() {
     isSecretActive,
     isHidingActive,
     isExtendActive,
-    panelNumbers, 
+    panelNumbers,
     playerScore,
     cpuScore,
     disabledPanels,
-    canPlayerClick,
     handlePanelClick
   } = useGameSequence({
     onMessage: handleMessage,
@@ -113,6 +125,33 @@ function App() {
 
   useEffect(() => {
     const prev = prevStatusRef.current;
+    const activatedMessages: string[] = [];
+
+    if (!prev.shorten && isShortenActive) {
+      activatedMessages.push('Shorten: CPUの待機時間が短縮されます');
+    }
+    if (!prev.quicken && isQuickenActive) {
+      activatedMessages.push('Quicken: ゲーム進行速度が短縮されます');
+    }
+    if (!prev.numDouble && isNumDoubleActive) {
+      activatedMessages.push('Num*2: 指示数字が2倍で表示されます');
+    }
+    if (!prev.extend && isExtendActive) {
+      activatedMessages.push('Extend: CPUの待機時間が延長されます');
+    }
+    if (!prev.shuffle && isShuffleActive) {
+      activatedMessages.push('Shuffle: パネルがシャッフルされます');
+    }
+    if (!prev.cpuGet && isCpuGetBoostActive) {
+      activatedMessages.push('CPUget: CPUがパネルを獲得します');
+    }
+    if (!prev.hiding && isHidingActive) {
+      activatedMessages.push('Hiding: パネルの数値が非表示になります');
+    }
+    if (!prev.secret && isSecretActive) {
+      activatedMessages.push('Secret: 指示数字が不明になります');
+    }
+
     const activated =
       (!prev.cpuGet && isCpuGetBoostActive) ||
       (!prev.shorten && isShortenActive) ||
@@ -132,6 +171,10 @@ function App() {
           console.error('イベント効果音の再生に失敗しました:', error);
         });
       }
+    }
+
+    if (activatedMessages.length > 0) {
+      setLogMessages((prevLogs) => [...prevLogs, ...activatedMessages]);
     }
 
     prevStatusRef.current = {
@@ -155,8 +198,8 @@ function App() {
     isExtendActive
   ]);
 
-  // ゲームスタート時にアクティブな難易度をセット
   const startGame = useCallback(() => {
+    setLogMessages([]);
     setActiveDifficulty(difficulty);
     const playerMax = CLEAR_POINT[difficulty];
     const cpuMax = getCpuGameOverScore(difficulty, MAX_ROUNDS);
@@ -172,124 +215,94 @@ function App() {
     originalStartGame();
   }, [difficulty, originalStartGame]);
 
+  const playerProgressMax = scoreProgressMax.player || CLEAR_POINT[difficulty];
+  const cpuProgressMax = scoreProgressMax.cpu || getCpuGameOverScore(difficulty, MAX_ROUNDS);
+  const hasGameStarted = activeDifficulty !== null;
+  const displayPanelNumbers = panelNumbers.length > 0 ? panelNumbers : IDLE_PANEL_NUMBERS;
+  const isPanelTextHidden = !hasGameStarted || isHidingActive;
+
   return (
-    <div style={{ minHeight: '100vh', padding: '2rem', backgroundColor: '#f3f4f6' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ 
-            fontSize: '1.25rem', 
-            fontWeight: 'bold',
-            marginBottom: '1rem',
-            minHeight: '2rem',
-            color: '#000000'
-          }}>
-            {message}
-          </div>
-          
-          {/* スコア表示 */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '2rem',
-            marginBottom: '1rem',
-            color: '#000000'
-          }}>
-            <div style={{ fontSize: '1.125rem' }}>
-              プレイヤー: <span style={{ fontWeight: 'bold' }}>{playerScore}</span>
-            </div>
-            <div style={{ fontSize: '1.125rem' }}>
-              CPU: <span style={{ fontWeight: 'bold' }}>{cpuScore}</span>
-            </div>
-          </div>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: '1rem',
-            marginBottom: '1rem',
-            color: '#000000'
-          }}>
-            <div style={{ minWidth: '260px', textAlign: 'left' }}>
-              <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                Player Progress: {playerScore}/{scoreProgressMax.player}
-              </div>
-              <progress
-                value={Math.min(playerScore, scoreProgressMax.player)}
-                max={scoreProgressMax.player || 1}
-                style={{ width: '100%', height: '1rem' }}
-              />
-            </div>
-            <div style={{ minWidth: '260px', textAlign: 'left' }}>
-              <div style={{ fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                CPU Progress: {cpuScore}/{scoreProgressMax.cpu}
-              </div>
-              <progress
-                value={Math.min(cpuScore, scoreProgressMax.cpu)}
-                max={scoreProgressMax.cpu || 1}
-                style={{ width: '100%', height: '1rem' }}
-              />
-            </div>
-          </div>
-          
-          {/* 難易度選択 */}
-          <div style={{ maxWidth: '300px', margin: '0 auto', marginBottom: '1rem' }}>
+    <div className="app-shell">
+      <div className="game-window">
+        <header className="app-header">
+          <nav className="app-menu" aria-label="menu">
+            <span>ゲーム(G)</span>
+            <span>難易度(D)</span>
+            <span>ヘルプ(H)</span>
+          </nav>
+          <div className="header-controls">
             <DifficultySelector
               selectedDifficulty={difficulty}
               onDifficultyChange={handleDifficultyChange}
               disabled={isGameRunning}
+              compact
             />
+            <button
+              className="start-button"
+              onClick={startGame}
+              disabled={isGameRunning}
+            >
+              ゲームスタート
+            </button>
           </div>
-          
-          <button 
-            onClick={startGame}
-            disabled={isGameRunning}
-            style={{
-              backgroundColor: isGameRunning ? '#9ca3af' : '#3b82f6',
-              color: 'white',
-              padding: '0.5rem 1rem',
-              borderRadius: '0.375rem',
-              cursor: isGameRunning ? 'not-allowed' : 'pointer'
-            }}
-          >
-            ゲームスタート
-          </button>
-        </div>
+        </header>
 
-        {/* ゲームの状態表示 */}
-        {(isGameRunning || isGameOver) && (
-          <div style={{
-            textAlign: 'center',
-            marginBottom: '1rem',
-            padding: '0.5rem',
-            backgroundColor: isGameOver ? '#fecaca' : (canPlayerClick ? '#dcfce7' : '#fee2e2'),
-            borderRadius: '0.375rem',
-            color: '#000000'
-          }}>
-            {isGameOver
-              ? 'ゲームオーバー'
-              : (canPlayerClick 
-              ? '今すぐクリックしてください！' 
-              : 'お待ちください...')}
-          </div>
-        )}
+        <main className="game-body">
+          <section className="status-row">
+            <div className="score-panel">
+              <div className="score-name">PLAYER</div>
+              <div className="score-points">{playerScore}</div>
+              <progress
+                className="score-progress"
+                value={Math.min(playerScore, playerProgressMax)}
+                max={playerProgressMax || 1}
+              />
+              <div className="score-meta">{playerScore}/{playerProgressMax}</div>
+            </div>
 
-        {/* 数値パネルの表示 */}
-        <NumberPanel 
-          numbers={panelNumbers} 
-          disabledNumbers={disabledPanels}
-          isAllDisabled={!isGameRunning}
-          isTextHidden={isHidingActive}
-          onPanelClick={handlePanelClick}
-        />
-        
-        {/* バッジグループ */}
-        <div style={{ marginTop: '1.5rem' }}>
-          <BadgeGroup 
-            title="ゲームステータス"
-            activeDifficulty={activeDifficulty}
-            activeStatuses={activeStatuses}
-          />
-        </div>
+            <div className={`message-window ${isGameOver ? 'is-game-over' : ''}`}>
+              {message || '\u00A0'}
+            </div>
+
+            <div className="score-panel">
+              <div className="score-name">CPU</div>
+              <div className="score-points">{cpuScore}</div>
+              <progress
+                className="score-progress"
+                value={Math.min(cpuScore, cpuProgressMax)}
+                max={cpuProgressMax || 1}
+              />
+              <div className="score-meta">{cpuScore}/{cpuProgressMax}</div>
+            </div>
+          </section>
+
+          <section className="numbers-row">
+            <NumberPanel
+              numbers={displayPanelNumbers}
+              disabledNumbers={disabledPanels}
+              isAllDisabled={!isGameRunning}
+              isTextHidden={isPanelTextHidden}
+              onPanelClick={handlePanelClick}
+            />
+          </section>
+
+          <section className="badges-row">
+            <BadgeGroup
+              activeDifficulty={activeDifficulty}
+              activeStatuses={activeStatuses}
+            />
+          </section>
+
+          <section className="log-row">
+            <textarea
+              ref={logAreaRef}
+              className="game-log"
+              readOnly
+              aria-label="game-log"
+              value={logMessages.join('\n')}
+            />
+          </section>
+        </main>
       </div>
     </div>
   );

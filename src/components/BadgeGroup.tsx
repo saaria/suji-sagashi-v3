@@ -21,25 +21,14 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
   const statusBadges: StatusBadge[] = ['CPUget', 'Shorten', 'Quicken', 'Shuffle', 'Num*2', 'Hiding', 'Secret', 'Extend'];
 
   return (
-    <div style={{ marginBottom: '1rem' }}>
+    <div className="badge-group">
       {title && (
-        <div style={{ 
-          fontWeight: 'bold', 
-          marginBottom: '0.5rem',
-          color: '#000000',
-          textAlign: 'center'
-        }}>
+        <div className="badge-group-title">
           {title}
         </div>
       )}
       
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: '0.5rem',
-        marginBottom: '0.5rem'
-      }}>
+      <div className="badge-row">
         {/* 難易度バッジ */}
         {difficulties.map((difficulty) => (
           <Badge
@@ -57,12 +46,7 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
         ))}
       </div>
       
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        gap: '0.5rem'
-      }}>
+      <div className="badge-row">
         {/* ステータスバッジ */}
         {statusBadges.map((status) => (
           <Badge

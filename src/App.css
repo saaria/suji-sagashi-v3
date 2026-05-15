@@ -31,6 +31,71 @@
   gap: 18px;
   font-size: 14px;
   white-space: nowrap;
+  align-items: center;
+}
+
+.menu-item {
+  position: relative;
+}
+
+.menu-button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #1b1b1b;
+  font-size: 14px;
+  padding: 2px 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu-button:hover {
+  border-color: #a0a0a0;
+  background: #e7e7e7;
+}
+
+.menu-button:focus-visible {
+  outline: 1px solid #4f8edc;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  min-width: 120px;
+  border: 1px solid #8f8f8f;
+  background: #f7f7f7;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
+  z-index: 20;
+}
+
+.menu-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #202020;
+  font-size: 13px;
+  padding: 6px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-dropdown-item:hover:not(:disabled) {
+  background: #0066cc;
+  color: #ffffff;
+}
+
+.menu-dropdown-item:disabled {
+  color: #8f8f8f;
+  cursor: not-allowed;
+}
+
+.menu-checkmark {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
 }
 
 .header-controls {

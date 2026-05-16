@@ -42,7 +42,7 @@ export const EXTEND_TRIGGER_TURN = 5;
 
 // ステータスバッジタイプを追加
 export type StatusBadge =
-  | 'CPUget'
+  | 'CpuGet'
   | 'Shorten'
   | 'Quicken'
   | 'Shuffle'

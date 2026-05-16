@@ -395,7 +395,7 @@ export const useGameSequence = ({
           setPanelNumbers(generateShuffledArray(1, 40));
         }
 
-        // CPUget補正中はプレイヤー入力を受け付けず、CPU待機時間を0にする
+        // CpuGet補正中はプレイヤー入力を受け付けず、CPU待機時間を0にする
         setCanPlayerClick(!isCpuGetBoostTurn);
         const cpuWaitTime = isCpuGetBoostTurn
           ? 0

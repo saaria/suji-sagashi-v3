@@ -13,13 +13,17 @@ function App() {
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
   const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false);
-  const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
+  const [isHelpMenuOpen, setIsHelpMenuOpen] = useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [difficulty, setDifficulty] = useState<Difficulty>('Normal');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
   const logAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const gameMenuRef = useRef<HTMLDivElement | null>(null);
   const difficultyMenuRef = useRef<HTMLDivElement | null>(null);
-  const bgmRef = useRef<HTMLAudioElement | null>(null);
+  const helpMenuRef = useRef<HTMLDivElement | null>(null);
+  const normalBgmRef = useRef<HTMLAudioElement | null>(null);
+  const hardBgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
   const eventSeRef = useRef<HTMLAudioElement | null>(null);
   const prevStatusRef = useRef({
@@ -34,27 +38,34 @@ function App() {
   });
 
   useEffect(() => {
-    const bgm = new Audio('/mdt01.mp3');
+    const normalBgm = new Audio('/mdt01.mp3');
+    const hardBgm = new Audio('/mdt03.mp3');
     const cpuGetSe = new Audio('/push03.wav');
     const eventSe = new Audio('/push01.wav');
-    bgm.loop = false;
-    bgm.preload = 'auto';
+    normalBgm.loop = false;
+    normalBgm.preload = 'auto';
+    hardBgm.loop = false;
+    hardBgm.preload = 'auto';
     cpuGetSe.loop = false;
     cpuGetSe.preload = 'auto';
     eventSe.loop = false;
     eventSe.preload = 'auto';
-    bgmRef.current = bgm;
+    normalBgmRef.current = normalBgm;
+    hardBgmRef.current = hardBgm;
     cpuGetSeRef.current = cpuGetSe;
     eventSeRef.current = eventSe;
 
     return () => {
-      bgm.pause();
-      bgm.currentTime = 0;
+      normalBgm.pause();
+      normalBgm.currentTime = 0;
+      hardBgm.pause();
+      hardBgm.currentTime = 0;
       cpuGetSe.pause();
       cpuGetSe.currentTime = 0;
       eventSe.pause();
       eventSe.currentTime = 0;
-      bgmRef.current = null;
+      normalBgmRef.current = null;
+      hardBgmRef.current = null;
       cpuGetSeRef.current = null;
       eventSeRef.current = null;
     };
@@ -70,14 +81,17 @@ function App() {
     const handleDocumentClick = (event: MouseEvent) => {
       const gameMenu = gameMenuRef.current;
       const difficultyMenu = difficultyMenuRef.current;
-      if (!gameMenu || !difficultyMenu) return;
+      const helpMenu = helpMenuRef.current;
+      if (!gameMenu || !difficultyMenu || !helpMenu) return;
       if (
         event.target instanceof Node &&
         !gameMenu.contains(event.target) &&
-        !difficultyMenu.contains(event.target)
+        !difficultyMenu.contains(event.target) &&
+        !helpMenu.contains(event.target)
       ) {
         setIsGameMenuOpen(false);
         setIsDifficultyMenuOpen(false);
+        setIsHelpMenuOpen(false);
       }
     };
 
@@ -135,7 +149,7 @@ function App() {
   });
 
   const activeStatuses: StatusBadge[] = [
-    ...(isCpuGetBoostActive ? ['CPUget'] as const : []),
+    ...(isCpuGetBoostActive ? ['CpuGet'] as const : []),
     ...(isQuickenActive ? ['Quicken'] as const : []),
     ...(isShortenActive ? ['Shorten'] as const : []),
     ...(isShuffleActive ? ['Shuffle'] as const : []),
@@ -165,7 +179,7 @@ function App() {
       activatedMessages.push('Shuffle: パネルがシャッフルされます');
     }
     if (!prev.cpuGet && isCpuGetBoostActive) {
-      activatedMessages.push('CPUget: CPUがパネルを獲得します');
+      activatedMessages.push('CpuGet: CPUがパネルを獲得します');
     }
     if (!prev.hiding && isHidingActive) {
       activatedMessages.push('Hiding: パネルの数値が非表示になります');
@@ -223,12 +237,22 @@ function App() {
   const startGame = useCallback(() => {
     setIsGameMenuOpen(false);
     setIsDifficultyMenuOpen(false);
+    setIsHelpMenuOpen(false);
     setLogMessages([]);
     setActiveDifficulty(difficulty);
     const playerMax = CLEAR_POINT[difficulty];
     const cpuMax = getCpuGameOverScore(difficulty, MAX_ROUNDS);
     setScoreProgressMax({ player: playerMax, cpu: cpuMax });
-    const bgm = bgmRef.current;
+    const bgm = (difficulty === 'Hard' || difficulty === 'Hell')
+      ? hardBgmRef.current
+      : normalBgmRef.current;
+    const otherBgm = (difficulty === 'Hard' || difficulty === 'Hell')
+      ? normalBgmRef.current
+      : hardBgmRef.current;
+    if (otherBgm) {
+      otherBgm.pause();
+      otherBgm.currentTime = 0;
+    }
     if (bgm) {
       bgm.pause();
       bgm.currentTime = 0;
@@ -248,16 +272,38 @@ function App() {
   const handleGameMenuToggle = useCallback(() => {
     setIsGameMenuOpen((prev) => !prev);
     setIsDifficultyMenuOpen(false);
+    setIsHelpMenuOpen(false);
   }, []);
 
   const handleDifficultyMenuToggle = useCallback(() => {
     setIsDifficultyMenuOpen((prev) => !prev);
     setIsGameMenuOpen(false);
+    setIsHelpMenuOpen(false);
   }, []);
 
   const handleDifficultyMenuSelect = useCallback((newDifficulty: Difficulty) => {
     setDifficulty(newDifficulty);
     setIsDifficultyMenuOpen(false);
+  }, []);
+
+  const handleHelpMenuToggle = useCallback(() => {
+    setIsHelpMenuOpen((prev) => !prev);
+    setIsGameMenuOpen(false);
+    setIsDifficultyMenuOpen(false);
+  }, []);
+
+  const handleVersionInfoClick = useCallback(() => {
+    setIsHelpMenuOpen(false);
+    setIsVersionModalOpen(true);
+  }, []);
+
+  const handleVersionModalClose = useCallback(() => {
+    setIsVersionModalOpen(false);
+  }, []);
+
+  const handleOpenManual = useCallback(() => {
+    setIsHelpMenuOpen(false);
+    window.open('./manual.html', '_blank', 'noopener,noreferrer');
   }, []);
 
   return (
@@ -273,7 +319,7 @@ function App() {
                 aria-expanded={isGameMenuOpen}
                 aria-haspopup="menu"
               >
-                ゲーム(G)
+                ゲーム(<span>G</span>)
               </button>
               {isGameMenuOpen && (
                 <div className="menu-dropdown" role="menu" aria-label="ゲームメニュー">
@@ -297,7 +343,7 @@ function App() {
                 aria-expanded={isDifficultyMenuOpen}
                 aria-haspopup="menu"
               >
-                難易度(D)
+                難易度(<span>D</span>)
               </button>
               {isDifficultyMenuOpen && (
                 <div className="menu-dropdown" role="menu" aria-label="難易度メニュー">
@@ -318,7 +364,37 @@ function App() {
                 </div>
               )}
             </div>
-            <button type="button" className="menu-button menu-static">ヘルプ(H)</button>
+            <div className="menu-item" ref={helpMenuRef}>
+              <button
+                type="button"
+                className="menu-button"
+                onClick={handleHelpMenuToggle}
+                aria-expanded={isHelpMenuOpen}
+                aria-haspopup="menu"
+              >
+                ヘルプ(<span>H</span>)
+              </button>
+              {isHelpMenuOpen && (
+                <div className="menu-dropdown" role="menu" aria-label="ヘルプメニュー">
+                  <button
+                    type="button"
+                    className="menu-dropdown-item"
+                    role="menuitem"
+                    onClick={handleOpenManual}
+                  >
+                    <span>遊び方</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="menu-dropdown-item"
+                    role="menuitem"
+                    onClick={handleVersionInfoClick}
+                  >
+                    <span>バージョン情報</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </nav>
         </header>
 
@@ -380,6 +456,24 @@ function App() {
             />
           </section>
         </main>
+
+        {isVersionModalOpen && (
+          <div className="modal-overlay" role="presentation">
+            <div className="modal-window" role="dialog" aria-modal="true" aria-label="バージョン情報">
+              <div className="modal-header">バージョン情報</div>
+              <div className="modal-content">Version: 3.0</div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="modal-close-button"
+                  onClick={handleVersionModalClose}
+                >
+                  閉じる
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

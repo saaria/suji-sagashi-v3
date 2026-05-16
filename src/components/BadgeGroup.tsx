@@ -16,6 +16,10 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
   // すべての難易度
   const difficulties: Difficulty[] = ['Easy', 'Normal', 'Hard', 'Hell'];
   const difficultyAdjustments: DifficultyAdjustment[] = ['+1', '+2', '+3', '+4'];
+  const difficultyAdjustmentTargets: StatusBadge[] = ['Shorten', 'Quicken', 'Shuffle', 'Num*2'];
+  const activeDifficultyAdjustmentCount = difficultyAdjustmentTargets.filter((status) =>
+    activeStatuses.includes(status)
+  ).length;
   
   // すべてのステータスバッジ
   const statusBadges: StatusBadge[] = ['Extend', 'Shorten', 'Quicken', 'Shuffle', 'Num*2', 'CPUget', 'Hiding', 'Secret'];
@@ -41,7 +45,7 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
           <Badge
             key={adjustment}
             label={adjustment}
-            isActive={false}
+            isActive={activeDifficultyAdjustmentCount > 0 && adjustment === `+${activeDifficultyAdjustmentCount}`}
           />
         ))}
       </div>

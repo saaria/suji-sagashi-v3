@@ -13,7 +13,7 @@ function App() {
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
   const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false);
-  const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
+  const [difficulty, setDifficulty] = useState<Difficulty>('Normal');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
   const logAreaRef = useRef<HTMLTextAreaElement | null>(null);

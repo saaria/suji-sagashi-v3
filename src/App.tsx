@@ -13,12 +13,14 @@ function App() {
   const [logMessages, setLogMessages] = useState<string[]>([]);
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
   const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false);
+  const [isHelpMenuOpen, setIsHelpMenuOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('Normal');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
   const logAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const gameMenuRef = useRef<HTMLDivElement | null>(null);
   const difficultyMenuRef = useRef<HTMLDivElement | null>(null);
+  const helpMenuRef = useRef<HTMLDivElement | null>(null);
   const normalBgmRef = useRef<HTMLAudioElement | null>(null);
   const hardBgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
@@ -78,14 +80,17 @@ function App() {
     const handleDocumentClick = (event: MouseEvent) => {
       const gameMenu = gameMenuRef.current;
       const difficultyMenu = difficultyMenuRef.current;
-      if (!gameMenu || !difficultyMenu) return;
+      const helpMenu = helpMenuRef.current;
+      if (!gameMenu || !difficultyMenu || !helpMenu) return;
       if (
         event.target instanceof Node &&
         !gameMenu.contains(event.target) &&
-        !difficultyMenu.contains(event.target)
+        !difficultyMenu.contains(event.target) &&
+        !helpMenu.contains(event.target)
       ) {
         setIsGameMenuOpen(false);
         setIsDifficultyMenuOpen(false);
+        setIsHelpMenuOpen(false);
       }
     };
 
@@ -231,6 +236,7 @@ function App() {
   const startGame = useCallback(() => {
     setIsGameMenuOpen(false);
     setIsDifficultyMenuOpen(false);
+    setIsHelpMenuOpen(false);
     setLogMessages([]);
     setActiveDifficulty(difficulty);
     const playerMax = CLEAR_POINT[difficulty];
@@ -265,15 +271,23 @@ function App() {
   const handleGameMenuToggle = useCallback(() => {
     setIsGameMenuOpen((prev) => !prev);
     setIsDifficultyMenuOpen(false);
+    setIsHelpMenuOpen(false);
   }, []);
 
   const handleDifficultyMenuToggle = useCallback(() => {
     setIsDifficultyMenuOpen((prev) => !prev);
     setIsGameMenuOpen(false);
+    setIsHelpMenuOpen(false);
   }, []);
 
   const handleDifficultyMenuSelect = useCallback((newDifficulty: Difficulty) => {
     setDifficulty(newDifficulty);
+    setIsDifficultyMenuOpen(false);
+  }, []);
+
+  const handleHelpMenuToggle = useCallback(() => {
+    setIsHelpMenuOpen((prev) => !prev);
+    setIsGameMenuOpen(false);
     setIsDifficultyMenuOpen(false);
   }, []);
 
@@ -335,7 +349,27 @@ function App() {
                 </div>
               )}
             </div>
-            <button type="button" className="menu-button menu-static">ヘルプ(<span>H</span>)</button>
+            <div className="menu-item" ref={helpMenuRef}>
+              <button
+                type="button"
+                className="menu-button"
+                onClick={handleHelpMenuToggle}
+                aria-expanded={isHelpMenuOpen}
+                aria-haspopup="menu"
+              >
+                ヘルプ(<span>H</span>)
+              </button>
+              {isHelpMenuOpen && (
+                <div className="menu-dropdown" role="menu" aria-label="ヘルプメニュー">
+                  <button type="button" className="menu-dropdown-item" role="menuitem">
+                    <span>遊び方</span>
+                  </button>
+                  <button type="button" className="menu-dropdown-item" role="menuitem">
+                    <span>バージョン情報</span>
+                  </button>
+                </div>
+              )}
+            </div>
           </nav>
         </header>
 

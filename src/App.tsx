@@ -19,7 +19,8 @@ function App() {
   const logAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const gameMenuRef = useRef<HTMLDivElement | null>(null);
   const difficultyMenuRef = useRef<HTMLDivElement | null>(null);
-  const bgmRef = useRef<HTMLAudioElement | null>(null);
+  const normalBgmRef = useRef<HTMLAudioElement | null>(null);
+  const hardBgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
   const eventSeRef = useRef<HTMLAudioElement | null>(null);
   const prevStatusRef = useRef({
@@ -34,27 +35,34 @@ function App() {
   });
 
   useEffect(() => {
-    const bgm = new Audio('/mdt01.mp3');
+    const normalBgm = new Audio('/mdt01.mp3');
+    const hardBgm = new Audio('/mdt03.mp3');
     const cpuGetSe = new Audio('/push03.wav');
     const eventSe = new Audio('/push01.wav');
-    bgm.loop = false;
-    bgm.preload = 'auto';
+    normalBgm.loop = false;
+    normalBgm.preload = 'auto';
+    hardBgm.loop = false;
+    hardBgm.preload = 'auto';
     cpuGetSe.loop = false;
     cpuGetSe.preload = 'auto';
     eventSe.loop = false;
     eventSe.preload = 'auto';
-    bgmRef.current = bgm;
+    normalBgmRef.current = normalBgm;
+    hardBgmRef.current = hardBgm;
     cpuGetSeRef.current = cpuGetSe;
     eventSeRef.current = eventSe;
 
     return () => {
-      bgm.pause();
-      bgm.currentTime = 0;
+      normalBgm.pause();
+      normalBgm.currentTime = 0;
+      hardBgm.pause();
+      hardBgm.currentTime = 0;
       cpuGetSe.pause();
       cpuGetSe.currentTime = 0;
       eventSe.pause();
       eventSe.currentTime = 0;
-      bgmRef.current = null;
+      normalBgmRef.current = null;
+      hardBgmRef.current = null;
       cpuGetSeRef.current = null;
       eventSeRef.current = null;
     };
@@ -228,7 +236,16 @@ function App() {
     const playerMax = CLEAR_POINT[difficulty];
     const cpuMax = getCpuGameOverScore(difficulty, MAX_ROUNDS);
     setScoreProgressMax({ player: playerMax, cpu: cpuMax });
-    const bgm = bgmRef.current;
+    const bgm = (difficulty === 'Hard' || difficulty === 'Hell')
+      ? hardBgmRef.current
+      : normalBgmRef.current;
+    const otherBgm = (difficulty === 'Hard' || difficulty === 'Hell')
+      ? normalBgmRef.current
+      : hardBgmRef.current;
+    if (otherBgm) {
+      otherBgm.pause();
+      otherBgm.currentTime = 0;
+    }
     if (bgm) {
       bgm.pause();
       bgm.currentTime = 0;
@@ -273,7 +290,7 @@ function App() {
                 aria-expanded={isGameMenuOpen}
                 aria-haspopup="menu"
               >
-                ゲーム(G)
+                ゲーム(<span>G</span>)
               </button>
               {isGameMenuOpen && (
                 <div className="menu-dropdown" role="menu" aria-label="ゲームメニュー">
@@ -297,7 +314,7 @@ function App() {
                 aria-expanded={isDifficultyMenuOpen}
                 aria-haspopup="menu"
               >
-                難易度(D)
+                難易度(<span>D</span>)
               </button>
               {isDifficultyMenuOpen && (
                 <div className="menu-dropdown" role="menu" aria-label="難易度メニュー">
@@ -318,7 +335,7 @@ function App() {
                 </div>
               )}
             </div>
-            <button type="button" className="menu-button menu-static">ヘルプ(H)</button>
+            <button type="button" className="menu-button menu-static">ヘルプ(<span>H</span>)</button>
           </nav>
         </header>
 

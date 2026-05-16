@@ -158,8 +158,8 @@
 }
 
 .score-panel {
-  background: #d9d9d9;
-  border: 1px solid #9d9d9d;
+  background: #dedede;
+  border: 1px solid #9f9f9f;
   box-shadow: inset 1px 1px 0 #ffffff;
   padding: 4px 6px;
 }
@@ -217,14 +217,14 @@
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 1px;
-  border: 1px solid #8f8f8f;
-  background: #8f8f8f;
+  border: 1px solid #9b9b9b;
+  background: #9b9b9b;
 }
 
 .number-cell {
   aspect-ratio: 1/1;
   border: 0;
-  background: #dedede;
+  background: #e6e6e6;
   color: #5a5a5a;
   font-size: clamp(16px, 2.1vw, 34px);
   line-height: 1;

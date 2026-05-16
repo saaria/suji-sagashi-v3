@@ -124,6 +124,8 @@ function App() {
     playerScore,
     cpuScore,
     disabledPanels,
+    capturedByPlayerNumbers,
+    capturedByCpuNumbers,
     handlePanelClick
   } = useGameSequence({
     onMessage: handleMessage,
@@ -353,6 +355,8 @@ function App() {
             <NumberPanel
               numbers={displayPanelNumbers}
               disabledNumbers={disabledPanels}
+              capturedByPlayerNumbers={capturedByPlayerNumbers}
+              capturedByCpuNumbers={capturedByCpuNumbers}
               isAllDisabled={!isGameRunning}
               isTextHidden={isPanelTextHidden}
               onPanelClick={handlePanelClick}

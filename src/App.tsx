@@ -14,6 +14,7 @@ function App() {
   const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
   const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false);
   const [isHelpMenuOpen, setIsHelpMenuOpen] = useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('Normal');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
@@ -291,6 +292,15 @@ function App() {
     setIsDifficultyMenuOpen(false);
   }, []);
 
+  const handleVersionInfoClick = useCallback(() => {
+    setIsHelpMenuOpen(false);
+    setIsVersionModalOpen(true);
+  }, []);
+
+  const handleVersionModalClose = useCallback(() => {
+    setIsVersionModalOpen(false);
+  }, []);
+
   return (
     <div className="app-shell">
       <div className="game-window">
@@ -364,7 +374,12 @@ function App() {
                   <button type="button" className="menu-dropdown-item" role="menuitem">
                     <span>遊び方</span>
                   </button>
-                  <button type="button" className="menu-dropdown-item" role="menuitem">
+                  <button
+                    type="button"
+                    className="menu-dropdown-item"
+                    role="menuitem"
+                    onClick={handleVersionInfoClick}
+                  >
                     <span>バージョン情報</span>
                   </button>
                 </div>
@@ -432,6 +447,24 @@ function App() {
           </section>
         </main>
       </div>
+
+      {isVersionModalOpen && (
+        <div className="modal-overlay" role="presentation">
+          <div className="modal-window" role="dialog" aria-modal="true" aria-label="バージョン情報">
+            <div className="modal-header">バージョン情報</div>
+            <div className="modal-content">Version: 3.0</div>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-close-button"
+                onClick={handleVersionModalClose}
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

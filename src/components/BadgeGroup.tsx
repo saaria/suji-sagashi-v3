@@ -22,7 +22,7 @@ export const BadgeGroup: React.FC<BadgeGroupProps> = ({
   ).length;
   
   // すべてのステータスバッジ
-  const statusBadges: StatusBadge[] = ['Extend', 'Shorten', 'Quicken', 'Shuffle', 'Num*2', 'CPUget', 'Hiding', 'Secret'];
+  const statusBadges: StatusBadge[] = ['Extend', 'Shorten', 'Quicken', 'Shuffle', 'Num*2', 'CpuGet', 'Hiding', 'Secret'];
 
   return (
     <div className="badge-group">

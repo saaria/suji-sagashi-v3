@@ -10,11 +10,9 @@ export const Badge: React.FC<BadgeProps> = ({
   label,
   isActive
 }) => {
-  const displayLabel = label === 'CPUget' ? 'CpuGet' : label;
-
   return (
     <div className={`status-badge ${isActive ? 'is-active' : ''}`}>
-      {displayLabel}
+      {label}
     </div>
   );
 }; 

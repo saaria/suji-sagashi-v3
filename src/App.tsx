@@ -135,7 +135,7 @@ function App() {
   });
 
   const activeStatuses: StatusBadge[] = [
-    ...(isCpuGetBoostActive ? ['CPUget'] as const : []),
+    ...(isCpuGetBoostActive ? ['CpuGet'] as const : []),
     ...(isQuickenActive ? ['Quicken'] as const : []),
     ...(isShortenActive ? ['Shorten'] as const : []),
     ...(isShuffleActive ? ['Shuffle'] as const : []),
@@ -165,7 +165,7 @@ function App() {
       activatedMessages.push('Shuffle: パネルがシャッフルされます');
     }
     if (!prev.cpuGet && isCpuGetBoostActive) {
-      activatedMessages.push('CPUget: CPUがパネルを獲得します');
+      activatedMessages.push('CpuGet: CPUがパネルを獲得します');
     }
     if (!prev.hiding && isHidingActive) {
       activatedMessages.push('Hiding: パネルの数値が非表示になります');

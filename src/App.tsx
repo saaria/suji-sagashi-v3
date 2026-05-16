@@ -301,6 +301,11 @@ function App() {
     setIsVersionModalOpen(false);
   }, []);
 
+  const handleOpenManual = useCallback(() => {
+    setIsHelpMenuOpen(false);
+    window.open('./manual.html', '_blank', 'noopener,noreferrer');
+  }, []);
+
   return (
     <div className="app-shell">
       <div className="game-window">
@@ -371,7 +376,12 @@ function App() {
               </button>
               {isHelpMenuOpen && (
                 <div className="menu-dropdown" role="menu" aria-label="ヘルプメニュー">
-                  <button type="button" className="menu-dropdown-item" role="menuitem">
+                  <button
+                    type="button"
+                    className="menu-dropdown-item"
+                    role="menuitem"
+                    onClick={handleOpenManual}
+                  >
                     <span>遊び方</span>
                   </button>
                   <button

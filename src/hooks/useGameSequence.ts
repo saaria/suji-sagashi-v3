@@ -45,6 +45,8 @@ export const useGameSequence = ({
   const [playerScore, setPlayerScore] = useState(0);
   const [cpuScore, setCpuScore] = useState(0);
   const [disabledPanels, setDisabledPanels] = useState<number[]>([]);
+  const [capturedByPlayerNumbers, setCapturedByPlayerNumbers] = useState<number[]>([]);
+  const [capturedByCpuNumbers, setCapturedByCpuNumbers] = useState<number[]>([]);
   // プレイヤーがクリックできるかどうかのフラグ
   const [canPlayerClick, setCanPlayerClick] = useState(false);
   
@@ -213,6 +215,8 @@ export const useGameSequence = ({
 
   const endGameByCpuLead = useCallback(() => {
     clearTimers();
+    setCapturedByPlayerNumbers([]);
+    setCapturedByCpuNumbers([]);
     setCanPlayerClick(false);
     setIsGameRunning(false);
     setIsGameOver(true);
@@ -248,6 +252,9 @@ export const useGameSequence = ({
       
       // パネルを無効化
       setDisabledPanels(prevDisabled => [...prevDisabled, clickedNumber]);
+      setCapturedByPlayerNumbers(prevCaptured =>
+        prevCaptured.includes(clickedNumber) ? prevCaptured : [...prevCaptured, clickedNumber]
+      );
       
       // プレイヤーが勝ったメッセージ
       onMessage(`${clickedNumber}をゲットしました！`);
@@ -285,6 +292,8 @@ export const useGameSequence = ({
 
   const startNextSequence = useCallback(() => {
     if (roundCountRef.current >= maxRounds) {
+      setCapturedByPlayerNumbers([]);
+      setCapturedByCpuNumbers([]);
       setIsGameRunning(false);
       // 勝敗判定関数を呼び出し
       showGameResult();
@@ -357,6 +366,10 @@ export const useGameSequence = ({
     }
     setIsExtendActive(isExtendTurn);
 
+    // 前ターンの獲得ハイライトは次ターン開始時に消す
+    setCapturedByPlayerNumbers([]);
+    setCapturedByCpuNumbers([]);
+
     // 「探す数字は...」を表示
     onMessage("探す数字は...");
     
@@ -404,6 +417,9 @@ export const useGameSequence = ({
             
             // 現在のターゲット数字に対応するパネルを無効化
             setDisabledPanels(prevDisabled => [...prevDisabled, currentTarget]);
+            setCapturedByCpuNumbers(prevCaptured =>
+              prevCaptured.includes(currentTarget) ? prevCaptured : [...prevCaptured, currentTarget]
+            );
             
             // CPUのアクション
             onMessage(`CPUが${currentTarget}をゲットしました！`);
@@ -474,6 +490,8 @@ export const useGameSequence = ({
     playerScoreRef.current = 0;
     cpuScoreRef.current = 0;
     setDisabledPanels([]);
+    setCapturedByPlayerNumbers([]);
+    setCapturedByCpuNumbers([]);
     setCanPlayerClick(false);
     
     // 探す数値の順番配列を生成
@@ -522,6 +540,8 @@ export const useGameSequence = ({
     playerScore,
     cpuScore,
     disabledPanels,
+    capturedByPlayerNumbers,
+    capturedByCpuNumbers,
     canPlayerClick,
     handlePanelClick,
     startGame,

@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import './App.css';
 import { useGameSequence } from './hooks/useGameSequence';
 import { NumberPanel } from './components/NumberPanel';
-import { DifficultySelector } from './components/DifficultySelector';
 import { BadgeGroup } from './components/BadgeGroup';
 import { CLEAR_POINT, Difficulty, StatusBadge, getCpuGameOverScore } from './types/gameTypes';
 
@@ -12,10 +11,14 @@ const IDLE_PANEL_NUMBERS = Array.from({ length: MAX_ROUNDS }, (_, index) => inde
 function App() {
   const [message, setMessage] = useState<string>('');
   const [logMessages, setLogMessages] = useState<string[]>([]);
+  const [isGameMenuOpen, setIsGameMenuOpen] = useState(false);
+  const [isDifficultyMenuOpen, setIsDifficultyMenuOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>('Easy');
   const [activeDifficulty, setActiveDifficulty] = useState<Difficulty | null>(null);
   const [scoreProgressMax, setScoreProgressMax] = useState({ player: 0, cpu: 0 });
   const logAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const gameMenuRef = useRef<HTMLDivElement | null>(null);
+  const difficultyMenuRef = useRef<HTMLDivElement | null>(null);
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const cpuGetSeRef = useRef<HTMLAudioElement | null>(null);
   const eventSeRef = useRef<HTMLAudioElement | null>(null);
@@ -63,6 +66,27 @@ function App() {
     logArea.scrollTop = logArea.scrollHeight;
   }, [logMessages]);
 
+  useEffect(() => {
+    const handleDocumentClick = (event: MouseEvent) => {
+      const gameMenu = gameMenuRef.current;
+      const difficultyMenu = difficultyMenuRef.current;
+      if (!gameMenu || !difficultyMenu) return;
+      if (
+        event.target instanceof Node &&
+        !gameMenu.contains(event.target) &&
+        !difficultyMenu.contains(event.target)
+      ) {
+        setIsGameMenuOpen(false);
+        setIsDifficultyMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleDocumentClick);
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+    };
+  }, []);
+
   const appendLogMessage = useCallback((msg: string) => {
     setLogMessages((prev) => [...prev, msg]);
   }, []);
@@ -84,10 +108,6 @@ function App() {
     });
   }, []);
 
-  const handleDifficultyChange = useCallback((newDifficulty: Difficulty) => {
-    setDifficulty(newDifficulty);
-  }, []);
-
   const {
     startGame: originalStartGame,
     isGameRunning,
@@ -104,6 +124,8 @@ function App() {
     playerScore,
     cpuScore,
     disabledPanels,
+    capturedByPlayerNumbers,
+    capturedByCpuNumbers,
     handlePanelClick
   } = useGameSequence({
     onMessage: handleMessage,
@@ -199,6 +221,8 @@ function App() {
   ]);
 
   const startGame = useCallback(() => {
+    setIsGameMenuOpen(false);
+    setIsDifficultyMenuOpen(false);
     setLogMessages([]);
     setActiveDifficulty(difficulty);
     const playerMax = CLEAR_POINT[difficulty];
@@ -221,30 +245,81 @@ function App() {
   const displayPanelNumbers = panelNumbers.length > 0 ? panelNumbers : IDLE_PANEL_NUMBERS;
   const isPanelTextHidden = !hasGameStarted || isHidingActive;
 
+  const handleGameMenuToggle = useCallback(() => {
+    setIsGameMenuOpen((prev) => !prev);
+    setIsDifficultyMenuOpen(false);
+  }, []);
+
+  const handleDifficultyMenuToggle = useCallback(() => {
+    setIsDifficultyMenuOpen((prev) => !prev);
+    setIsGameMenuOpen(false);
+  }, []);
+
+  const handleDifficultyMenuSelect = useCallback((newDifficulty: Difficulty) => {
+    setDifficulty(newDifficulty);
+    setIsDifficultyMenuOpen(false);
+  }, []);
+
   return (
     <div className="app-shell">
       <div className="game-window">
         <header className="app-header">
           <nav className="app-menu" aria-label="menu">
-            <span>ゲーム(G)</span>
-            <span>難易度(D)</span>
-            <span>ヘルプ(H)</span>
+            <div className="menu-item" ref={gameMenuRef}>
+              <button
+                type="button"
+                className="menu-button"
+                onClick={handleGameMenuToggle}
+                aria-expanded={isGameMenuOpen}
+                aria-haspopup="menu"
+              >
+                ゲーム(G)
+              </button>
+              {isGameMenuOpen && (
+                <div className="menu-dropdown" role="menu" aria-label="ゲームメニュー">
+                  <button
+                    type="button"
+                    className="menu-dropdown-item"
+                    role="menuitem"
+                    onClick={startGame}
+                    disabled={isGameRunning}
+                  >
+                    ゲーム開始
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="menu-item" ref={difficultyMenuRef}>
+              <button
+                type="button"
+                className="menu-button"
+                onClick={handleDifficultyMenuToggle}
+                aria-expanded={isDifficultyMenuOpen}
+                aria-haspopup="menu"
+              >
+                難易度(D)
+              </button>
+              {isDifficultyMenuOpen && (
+                <div className="menu-dropdown" role="menu" aria-label="難易度メニュー">
+                  {(['Easy', 'Normal', 'Hard', 'Hell'] as Difficulty[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className="menu-dropdown-item"
+                      role="menuitemradio"
+                      aria-checked={difficulty === item}
+                      onClick={() => handleDifficultyMenuSelect(item)}
+                      disabled={isGameRunning}
+                    >
+                      <span className="menu-checkmark">{difficulty === item ? '✓' : ''}</span>
+                      <span>{item}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button type="button" className="menu-button menu-static">ヘルプ(H)</button>
           </nav>
-          <div className="header-controls">
-            <DifficultySelector
-              selectedDifficulty={difficulty}
-              onDifficultyChange={handleDifficultyChange}
-              disabled={isGameRunning}
-              compact
-            />
-            <button
-              className="start-button"
-              onClick={startGame}
-              disabled={isGameRunning}
-            >
-              ゲームスタート
-            </button>
-          </div>
         </header>
 
         <main className="game-body">
@@ -280,6 +355,8 @@ function App() {
             <NumberPanel
               numbers={displayPanelNumbers}
               disabledNumbers={disabledPanels}
+              capturedByPlayerNumbers={capturedByPlayerNumbers}
+              capturedByCpuNumbers={capturedByCpuNumbers}
               isAllDisabled={!isGameRunning}
               isTextHidden={isPanelTextHidden}
               onPanelClick={handlePanelClick}

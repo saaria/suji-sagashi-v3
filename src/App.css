@@ -1,6 +1,6 @@
 .app-shell {
   min-height: 100vh;
-  padding: 16px;
+  padding: 0;
   background: #d8d8d8;
   color: #1b1b1b;
   display: flex;
@@ -9,8 +9,8 @@
 }
 
 .game-window {
-  width: 100%;
-  max-width: 960px;
+  width: 960px;
+  max-width: 100%;
   background: #ececec;
   border: 1px solid #8d8d8d;
   box-shadow: inset 1px 1px 0 #ffffff, inset -1px -1px 0 #a3a3a3;
@@ -28,9 +28,74 @@
 
 .app-menu {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   font-size: 14px;
   white-space: nowrap;
+  align-items: center;
+}
+
+.menu-item {
+  position: relative;
+}
+
+.menu-button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: #1b1b1b;
+  font-size: 14px;
+  padding: 2px 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.menu-button:hover {
+  border-color: #a0a0a0;
+  background: #e7e7e7;
+}
+
+.menu-button:focus-visible {
+  outline: 1px solid #4f8edc;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  min-width: 120px;
+  border: 1px solid #8f8f8f;
+  background: #f7f7f7;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.15);
+  z-index: 20;
+}
+
+.menu-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #202020;
+  font-size: 13px;
+  padding: 6px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu-dropdown-item:hover:not(:disabled) {
+  background: #0066cc;
+  color: #ffffff;
+}
+
+.menu-dropdown-item:disabled {
+  color: #8f8f8f;
+  cursor: not-allowed;
+}
+
+.menu-checkmark {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
 }
 
 .header-controls {
@@ -87,27 +152,28 @@
 
 .status-row {
   display: grid;
-  grid-template-columns: minmax(125px, 1fr) minmax(260px, 2fr) minmax(125px, 1fr);
+  grid-template-columns: minmax(96px, 1fr) minmax(0, 6fr) minmax(96px, 1fr);
   gap: 4px;
   margin-bottom: 4px;
 }
 
 .score-panel {
-  background: #d9d9d9;
-  border: 1px solid #9d9d9d;
+  background: #dedede;
+  border: 1px solid #9f9f9f;
   box-shadow: inset 1px 1px 0 #ffffff;
   padding: 4px 6px;
 }
 
 .score-name {
   font-size: 14px;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
+  text-align: center;
 }
 
 .score-points {
   font-size: 22px;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 1px;
   text-align: center;
 }
 
@@ -117,10 +183,11 @@
 }
 
 .score-meta {
-  margin-top: 2px;
+  margin-top: 1px;
   font-size: 11px;
   text-align: right;
   color: #3f3f3f;
+  text-align: center;
 }
 
 .message-window {
@@ -150,14 +217,14 @@
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 1px;
-  border: 1px solid #8f8f8f;
-  background: #8f8f8f;
+  border: 1px solid #9b9b9b;
+  background: #9b9b9b;
 }
 
 .number-cell {
   aspect-ratio: 1/1;
   border: 0;
-  background: #dedede;
+  background: #e6e6e6;
   color: #5a5a5a;
   font-size: clamp(16px, 2.1vw, 34px);
   line-height: 1;
@@ -172,8 +239,20 @@
 }
 
 .number-cell.is-disabled {
-  color: #9a9a9a;
-  background: #d1d1d1;
+  background: #e6e6e6;
+  cursor: not-allowed;
+}
+
+.number-cell.is-disabled-hidden {
+  color: #e6e6e6;
+}
+
+.number-cell.is-captured-player {
+  color: #0c8f0c;
+}
+
+.number-cell.is-captured-cpu {
+  color: #b91919;
 }
 
 .badges-row {
@@ -238,10 +317,6 @@
 }
 
 @media (max-width: 700px) {
-  .app-shell {
-    padding: 8px;
-  }
-
   .app-header {
     flex-direction: column;
     align-items: stretch;
@@ -252,12 +327,20 @@
   }
 
   .status-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(72px, 2fr) minmax(0, 4fr) minmax(72px, 2fr);
   }
 
   .message-window {
-    order: -1;
     min-height: 56px;
+  }
+
+  .score-points {
+    font-size: 18px;
+  }
+
+  .score-name,
+  .score-meta {
+    font-size: 11px;
   }
 
   .badge-row {

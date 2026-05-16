@@ -446,25 +446,25 @@ function App() {
             />
           </section>
         </main>
-      </div>
 
-      {isVersionModalOpen && (
-        <div className="modal-overlay" role="presentation">
-          <div className="modal-window" role="dialog" aria-modal="true" aria-label="バージョン情報">
-            <div className="modal-header">バージョン情報</div>
-            <div className="modal-content">Version: 3.0</div>
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="modal-close-button"
-                onClick={handleVersionModalClose}
-              >
-                閉じる
-              </button>
+        {isVersionModalOpen && (
+          <div className="modal-overlay" role="presentation">
+            <div className="modal-window" role="dialog" aria-modal="true" aria-label="バージョン情報">
+              <div className="modal-header">バージョン情報</div>
+              <div className="modal-content">Version: 3.0</div>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="modal-close-button"
+                  onClick={handleVersionModalClose}
+                >
+                  閉じる
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 8px 10px;
+  padding: 8px 8px;
   border-bottom: 1px solid #a0a0a0;
   background: #f6f6f6;
 }
@@ -55,6 +55,10 @@
 
 .menu-button:focus-visible {
   outline: 1px solid #4f8edc;
+}
+
+.menu-button span {
+  text-decoration: underline;
 }
 
 .menu-dropdown {
@@ -147,14 +151,14 @@
 }
 
 .game-body {
-  padding: 8px;
+  padding: 2px;
 }
 
 .status-row {
   display: grid;
   grid-template-columns: minmax(96px, 1fr) minmax(0, 6fr) minmax(96px, 1fr);
   gap: 4px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .score-panel {
@@ -210,7 +214,7 @@
 }
 
 .numbers-row {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .number-panel {
@@ -262,7 +266,7 @@
 }
 
 .log-row {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .game-log {
@@ -344,6 +348,10 @@
   }
 
   .badge-row {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+
+  .status-badge {
+    font-size: 12px;
   }
 }

@@ -38,10 +38,10 @@ function App() {
   });
 
   useEffect(() => {
-    const normalBgm = new Audio('/mdt01.mp3');
-    const hardBgm = new Audio('/mdt03.mp3');
-    const cpuGetSe = new Audio('/push03.wav');
-    const eventSe = new Audio('/push01.wav');
+    const normalBgm = new Audio('./mdt01.mp3');
+    const hardBgm = new Audio('./mdt03.mp3');
+    const cpuGetSe = new Audio('./push03.wav');
+    const eventSe = new Audio('./push01.wav');
     normalBgm.loop = false;
     normalBgm.preload = 'auto';
     hardBgm.loop = false;

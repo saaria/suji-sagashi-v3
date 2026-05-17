@@ -80,8 +80,8 @@ export const useGameSequence = ({
   }, [cpuScore]);
 
   useEffect(() => {
-    const correctSe = new Audio('./d_chaim.wav');
-    const wrongSe = new Audio('./kan.wav');
+    const correctSe = new Audio('./d_chaim.ogg');
+    const wrongSe = new Audio('./kan.ogg');
     correctSe.loop = false;
     wrongSe.loop = false;
     correctSe.preload = 'auto';

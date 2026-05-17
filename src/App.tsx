@@ -433,7 +433,7 @@ function App() {
               disabledNumbers={disabledPanels}
               capturedByPlayerNumbers={capturedByPlayerNumbers}
               capturedByCpuNumbers={capturedByCpuNumbers}
-              isAllDisabled={!isGameRunning}
+              isAllDisabled={!isGameRunning && !hasGameStarted}
               isTextHidden={isPanelTextHidden}
               onPanelClick={handlePanelClick}
             />
@@ -461,7 +461,11 @@ function App() {
           <div className="modal-overlay" role="presentation">
             <div className="modal-window" role="dialog" aria-modal="true" aria-label="バージョン情報">
               <div className="modal-header">バージョン情報</div>
-              <div className="modal-content">Version: 3.0</div>
+              <div className="modal-content">
+                <p>Version: 3.0</p>
+                <p>BGM: <a href="http://www.frasforum.com/index.shtml" rel="noopener noreferrer" target="blank">Fra's Forum</a></p>
+                <p>Sound Effects: <a href="http://www.zero-matter.com/" rel="noopener noreferrer" target="blank">零式マテリアル</a></p>
+              </div>
               <div className="modal-actions">
                 <button
                   type="button"

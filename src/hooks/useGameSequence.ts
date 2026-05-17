@@ -63,6 +63,8 @@ export const useGameSequence = ({
   const cpuTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const correctSeRef = useRef<HTMLAudioElement | null>(null);
   const wrongSeRef = useRef<HTMLAudioElement | null>(null);
+  const activeSeClonesRef = useRef<Set<HTMLAudioElement>>(new Set());
+  const isSeWarmedUpRef = useRef(false);
   
   // スコアの参照を保持
   const playerScoreRef = useRef(0);
@@ -78,8 +80,8 @@ export const useGameSequence = ({
   }, [cpuScore]);
 
   useEffect(() => {
-    const correctSe = new Audio('./d_chaim.wav');
-    const wrongSe = new Audio('./kan.wav');
+    const correctSe = new Audio('./d_chaim.ogg');
+    const wrongSe = new Audio('./kan.ogg');
     correctSe.loop = false;
     wrongSe.loop = false;
     correctSe.preload = 'auto';
@@ -88,12 +90,57 @@ export const useGameSequence = ({
     wrongSeRef.current = wrongSe;
 
     return () => {
+      activeSeClonesRef.current.forEach((se) => {
+        se.pause();
+        se.src = '';
+      });
+      activeSeClonesRef.current.clear();
       correctSe.pause();
       correctSe.currentTime = 0;
       wrongSe.pause();
       wrongSe.currentTime = 0;
       correctSeRef.current = null;
       wrongSeRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const warmupSe = async () => {
+      if (isSeWarmedUpRef.current) return;
+      isSeWarmedUpRef.current = true;
+
+      const targets = [correctSeRef.current, wrongSeRef.current].filter(
+        (audio): audio is HTMLAudioElement => audio !== null
+      );
+
+      for (const audio of targets) {
+        try {
+          audio.muted = true;
+          await audio.play();
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = false;
+        } catch {
+          audio.muted = false;
+        }
+      }
+    };
+
+    const handleFirstInteraction = () => {
+      void warmupSe();
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
+    };
+
+    window.addEventListener('pointerdown', handleFirstInteraction, { passive: true });
+    window.addEventListener('touchstart', handleFirstInteraction, { passive: true });
+    window.addEventListener('keydown', handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+      window.removeEventListener('keydown', handleFirstInteraction);
     };
   }, []);
 
@@ -127,9 +174,21 @@ export const useGameSequence = ({
 
   const playSe = useCallback((audio: HTMLAudioElement | null) => {
     if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
-    void audio.play().catch((error) => {
+
+    const clone = audio.cloneNode(true) as HTMLAudioElement;
+    clone.preload = 'auto';
+    activeSeClonesRef.current.add(clone);
+
+    const cleanup = () => {
+      activeSeClonesRef.current.delete(clone);
+      clone.src = '';
+    };
+
+    clone.addEventListener('ended', cleanup, { once: true });
+    clone.addEventListener('error', cleanup, { once: true });
+
+    void clone.play().catch((error) => {
+      cleanup();
       console.error('効果音の再生に失敗しました:', error);
     });
   }, []);

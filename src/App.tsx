@@ -433,7 +433,7 @@ function App() {
               disabledNumbers={disabledPanels}
               capturedByPlayerNumbers={capturedByPlayerNumbers}
               capturedByCpuNumbers={capturedByCpuNumbers}
-              isAllDisabled={!isGameRunning}
+              isAllDisabled={!isGameRunning && !hasGameStarted}
               isTextHidden={isPanelTextHidden}
               onPanelClick={handlePanelClick}
             />
